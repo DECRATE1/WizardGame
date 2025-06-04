@@ -1,10 +1,10 @@
-import { canvas } from "../main";
+import { isCast, spellCast } from "../main";
 import { Sprite } from "../Sprite/Sprite";
-import { ctx } from "../main";
 
 export class Spell extends Sprite {
   frames: number;
   currentFrame: number = 0;
+  defaultPos: number;
   constructor({
     image,
     position,
@@ -18,6 +18,7 @@ export class Spell extends Sprite {
   }) {
     super({ image, position, ctx });
     this.frames = frames;
+    this.defaultPos = this.position.x;
   }
 
   draw(): void {
@@ -36,8 +37,21 @@ export class Spell extends Sprite {
     }
   }
 
-  update(): void {
-    this.draw();
-    this.position.x += 1;
+  update({ enemyPos }: { enemyPos: { x: number } }) {
+    if (this.isColiding({ enemyPos })) {
+      spellCast.value = "";
+      isCast.value = false;
+      this.position.x = this.defaultPos;
+      return false;
+    } else {
+      this.draw();
+      this.position.x += 1;
+    }
+  }
+
+  isColiding({ enemyPos }: { enemyPos: { x: number } }) {
+    if (this.position.x >= enemyPos.x - 32 && this.position.x <= enemyPos.x) {
+      return true;
+    }
   }
 }

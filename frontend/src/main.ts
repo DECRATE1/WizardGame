@@ -4,8 +4,8 @@ import { Spell } from "./Spell/Spell";
 import { Sprite } from "./Sprite/Sprite";
 import "./style.css";
 
-let spellCast = "";
-let isCast = false;
+export let spellCast = { value: "" };
+export let isCast = { value: false };
 export const SpellMap = new Map<number, any>();
 const section = document.createElement("div");
 const board = document.createElement("div");
@@ -26,8 +26,8 @@ button.style.color = "white";
 button.style.width = "100%";
 button.style.height = "30px";
 button.onclick = () => {
-  isCast = true;
-  console.log(isCast, spellCast);
+  isCast.value = true;
+  console.log(isCast, spellCast.value);
 };
 
 board.id = "#board";
@@ -41,16 +41,18 @@ for (let i = 0; i < 9; i++) {
   button.style.width = (+board.style.width / 9).toString();
   button.style.height = (+board.style.height / 9).toString();
   button.style.display = "flex";
-  button.style.background = "blue";
+
   button.style.alignItems = "center";
   button.style.justifyContent = "center";
+  button.style.backgroundImage = `url('/${i}.png')`;
+  button.style.backgroundRepeat = "no-repeat";
+  button.style.backgroundSize = "cover";
 
   button.style.gridColumn = ((i % 3) + 1).toString();
 
-  button.innerHTML = (1 + i).toString();
   button.style.color = "red";
   button.addEventListener("click", () => {
-    spellCast += button.innerHTML;
+    spellCast.value += 1;
   });
   board.appendChild(button);
 }
@@ -89,7 +91,7 @@ const player = new Player({
   frames: 3,
 });
 
-const enemy = new Enemy({
+export const enemy = new Enemy({
   image: "/Dummy.png",
   position: { x: canvas.width, y: Math.round(canvas.height / 1.3) },
   ctx,
@@ -100,9 +102,12 @@ function render() {
   background.draw();
   player.draw();
   enemy.draw();
-  if (isCast) {
-    if (SpellMap.has(+spellCast)) {
-      SpellMap.get(+spellCast).update();
+  if (isCast.value) {
+    const spell = SpellMap.get(+spellCast.value);
+    if (spell) {
+      if (spell.isColiding) {
+        spell.update({ enemyPos: { x: enemy.position.x } });
+      }
     }
   }
   window.requestAnimationFrame(render);

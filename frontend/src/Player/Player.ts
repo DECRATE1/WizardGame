@@ -31,5 +31,16 @@ export class Player extends Sprite {
         this.image.height
       );
     }
+    this.createHitbox();
+  }
+
+  createHitbox(): void {
+    this.ctx.fillStyle = "rgba(255,0,0,0)";
+    this.ctx.fillRect(
+      this.position.x - this.image.width,
+      this.position.y - this.image.height,
+      this.image.width / this.frames,
+      this.image.height
+    );
   }
 }
