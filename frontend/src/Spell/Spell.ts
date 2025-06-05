@@ -37,21 +37,12 @@ export class Spell extends Sprite {
     }
   }
 
-  update({ enemyPos }: { enemyPos: { x: number } }) {
-    if (this.isColiding({ enemyPos })) {
-      spellCast.value = "";
-      isCast.value = false;
-      this.position.x = this.defaultPos;
-      return false;
-    } else {
-      this.draw();
-      this.position.x += 1;
-    }
-  }
-
   isColiding({ enemyPos }: { enemyPos: { x: number } }) {
     if (this.position.x >= enemyPos.x - 32 && this.position.x <= enemyPos.x) {
+      spellCast.value = "";
+      isCast.value = false;
       return true;
     }
+    return false;
   }
 }

@@ -1,6 +1,8 @@
 import { Enemy } from "./Enemy/Enemy";
 import { Player } from "./Player/Player";
+import { DynamicSpell } from "./Spell/DynamicSpell";
 import { Spell } from "./Spell/Spell";
+import { StaticSpell } from "./Spell/StaticSpell";
 import { Sprite } from "./Sprite/Sprite";
 import "./style.css";
 
@@ -26,6 +28,7 @@ button.style.color = "white";
 button.style.width = "100%";
 button.style.height = "30px";
 button.onclick = () => {
+  if (isCast.value) return;
   isCast.value = true;
   console.log(isCast, spellCast.value);
 };
@@ -52,7 +55,11 @@ for (let i = 0; i < 9; i++) {
 
   button.style.color = "red";
   button.addEventListener("click", () => {
-    spellCast.value += 1;
+    if (!isCast.value) {
+      spellCast.value += i + 1;
+    } else {
+      return;
+    }
   });
   board.appendChild(button);
 }
@@ -69,13 +76,26 @@ if (!canvas) {
 
 export const ctx = canvas.getContext("2d")!;
 
-const fireball = new Spell({
+const fireball = new DynamicSpell({
   image: "/fireball (3).png",
   position: { x: 100, y: Math.round(canvas.height / 1.32) },
   ctx,
   frames: 1,
+  velocity: 1,
 });
 
+const shield = new StaticSpell({
+  image: "/Shield.png",
+  position: {
+    x: canvas.width / 2 + 16,
+    y: canvas.height / 2.5,
+  },
+  ctx,
+  frames: 1,
+  time: 300,
+});
+
+SpellMap.set(626, shield);
 SpellMap.set(111, fireball);
 
 const background = new Sprite({
@@ -105,9 +125,12 @@ function render() {
   if (isCast.value) {
     const spell = SpellMap.get(+spellCast.value);
     if (spell) {
-      if (spell.isColiding) {
-        spell.update({ enemyPos: { x: enemy.position.x } });
-      }
+      spell.type === "dynamic"
+        ? spell.update({ enemyPos: { x: enemy.position.x } })
+        : spell.update({ deltaTime: 1 });
+    } else {
+      spellCast.value = "";
+      isCast.value = false;
     }
   }
   window.requestAnimationFrame(render);
