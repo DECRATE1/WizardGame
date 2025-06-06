@@ -6,19 +6,21 @@ export class StaticSpell extends Spell {
   time: number;
   type: string = "static";
   constructor({
+    id,
     image,
     position,
     ctx,
     frames,
     time,
   }: {
+    id: number;
     image: string;
     position: { x: number; y: number };
     ctx: CanvasRenderingContext2D;
     frames: number;
     time: number;
   }) {
-    super({ image, position, ctx, frames });
+    super({ image, position, ctx, frames, id });
     this.time = time;
   }
 
@@ -30,7 +32,6 @@ export class StaticSpell extends Spell {
       this.timer = 0;
       return;
     }
-    console.log(this.timer);
     this.draw();
   }
 }

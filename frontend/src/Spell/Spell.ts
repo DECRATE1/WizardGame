@@ -2,15 +2,18 @@ import { isCast, spellCast } from "../main";
 import { Sprite } from "../Sprite/Sprite";
 
 export class Spell extends Sprite {
+  id: number;
   frames: number;
   currentFrame: number = 0;
   defaultPos: number;
   constructor({
+    id,
     image,
     position,
     ctx,
     frames,
   }: {
+    id: number;
     image: string;
     position: { x: number; y: number };
     ctx: CanvasRenderingContext2D;
@@ -19,6 +22,7 @@ export class Spell extends Sprite {
     super({ image, position, ctx });
     this.frames = frames;
     this.defaultPos = this.position.x;
+    this.id = id;
   }
 
   draw(): void {

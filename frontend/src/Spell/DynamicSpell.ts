@@ -4,12 +4,14 @@ export class DynamicSpell extends Spell {
   velocity: number;
   type: string = "dynamic";
   constructor({
+    id,
     image,
     position,
     ctx,
     frames,
     velocity,
   }: {
+    id: number;
     image: string;
     position: {
       x: number;
@@ -19,7 +21,7 @@ export class DynamicSpell extends Spell {
     frames: number;
     velocity: number;
   }) {
-    super({ image, position, ctx, frames });
+    super({ image, position, ctx, frames, id });
     this.velocity = velocity;
   }
 
