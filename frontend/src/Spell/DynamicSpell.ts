@@ -35,8 +35,10 @@ export class DynamicSpell extends Spell {
       this.position.x = this.defaultPos;
       if (this.dmg) {
         enemy.hp -= this.dmg;
+        enemy.takeADamage();
       }
       spellManager.removeFromQueue({ id: this.id });
+
       return;
     }
 

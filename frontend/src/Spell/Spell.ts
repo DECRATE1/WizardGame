@@ -1,4 +1,3 @@
-import { enemy } from "../main";
 import { Sprite } from "../Sprite/Sprite";
 
 export class Spell extends Sprite {

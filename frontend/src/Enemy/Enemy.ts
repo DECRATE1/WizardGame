@@ -36,6 +36,7 @@ export class Enemy extends Player {
     this.createHitbox();
     this.drawHpBar();
   }
+
   drawHpBar(): void {
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(
@@ -51,5 +52,10 @@ export class Enemy extends Player {
       this.hp,
       5
     );
+  }
+
+  takeADamage() {
+    this.currentFrame = 1;
+    setTimeout(() => (this.currentFrame = 0), 250);
   }
 }
