@@ -53,6 +53,10 @@ for (let i = 0; i < 9; i++) {
   button.style.color = "red";
   button.addEventListener("click", () => {
     spellManager.spellCast += i + 1;
+    button.style.filter = "opacity(20%)";
+    setTimeout(() => {
+      button.style.filter = "none";
+    }, 200);
   });
   board.appendChild(button);
 }
