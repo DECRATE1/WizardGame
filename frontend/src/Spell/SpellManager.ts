@@ -3,6 +3,7 @@ import { StaticSpell } from "./StaticSpell";
 
 export class SpellManager {
   private spellMap = new Map();
+  spellCast: string = "";
   spellQueue = new Map<number, DynamicSpell | StaticSpell>();
   addSpellToMap = ({
     id,
@@ -25,7 +26,7 @@ export class SpellManager {
 
   addToCasting = ({ id }: { id: number }) => {
     const spell: StaticSpell | DynamicSpell = this.getSpell({ id });
-    this.spellQueue.set(id, spell);
+    if (spell) this.spellQueue.set(id, spell);
   };
 
   removeFromQueue = ({ id }: { id: number }) => {

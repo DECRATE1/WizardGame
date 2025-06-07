@@ -1,4 +1,4 @@
-import { isCast, spellCast } from "../main";
+import { spellManager } from "../main";
 import { Spell } from "./Spell";
 
 export class StaticSpell extends Spell {
@@ -27,9 +27,11 @@ export class StaticSpell extends Spell {
   update({ deltaTime }: { deltaTime: number }) {
     this.timer += deltaTime;
     if (this.timer >= this.time) {
-      isCast.value = false;
-      spellCast.value = "";
+      //isCast.value = false;
+      //spellCast.value = "";
       this.timer = 0;
+
+      spellManager.removeFromQueue({ id: this.id });
       return;
     }
     this.draw();

@@ -2,14 +2,10 @@ import { Enemy } from "./Enemy/Enemy";
 import { Player } from "./Player/Player";
 import { DynamicSpell } from "./Spell/DynamicSpell";
 import { SpellManager } from "./Spell/SpellManager";
-
 import { StaticSpell } from "./Spell/StaticSpell";
-
 import { Sprite } from "./Sprite/Sprite";
 import "./style.css";
 
-export let spellCast = { value: "" };
-export let isCast = { value: false };
 export const SpellMap = new Map<number, any>();
 const section = document.createElement("div");
 const board = document.createElement("div");
@@ -30,10 +26,8 @@ button.style.color = "white";
 button.style.width = "100%";
 button.style.height = "30px";
 button.onclick = () => {
-  if (isCast.value) return;
-  isCast.value = true;
-  spellManager.addToCasting({ id: +spellCast.value });
-  console.log(isCast, spellCast.value);
+  spellManager.addToCasting({ id: +spellManager.spellCast });
+  spellManager.spellCast = "";
 };
 
 board.id = "#board";
@@ -58,11 +52,7 @@ for (let i = 0; i < 9; i++) {
 
   button.style.color = "red";
   button.addEventListener("click", () => {
-    if (!isCast.value) {
-      spellCast.value += i + 1;
-    } else {
-      return;
-    }
+    spellManager.spellCast += i + 1;
   });
   board.appendChild(button);
 }
@@ -88,6 +78,7 @@ const fireball = new DynamicSpell({
   frames: 1,
   velocity: 1,
   id: 111,
+  dmg: 10,
 });
 
 const shield = new StaticSpell({

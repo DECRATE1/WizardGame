@@ -1,4 +1,4 @@
-import { isCast, spellCast } from "../main";
+import { enemy } from "../main";
 import { Sprite } from "../Sprite/Sprite";
 
 export class Spell extends Sprite {
@@ -43,8 +43,6 @@ export class Spell extends Sprite {
 
   isColiding({ enemyPos }: { enemyPos: { x: number } }) {
     if (this.position.x >= enemyPos.x - 32 && this.position.x <= enemyPos.x) {
-      spellCast.value = "";
-      isCast.value = false;
       return true;
     }
     return false;

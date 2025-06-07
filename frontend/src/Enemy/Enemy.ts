@@ -6,7 +6,6 @@ export class Enemy extends Player {
     image,
     position,
     frames,
-
     ctx,
   }: {
     image: string;
@@ -35,5 +34,22 @@ export class Enemy extends Player {
       );
     }
     this.createHitbox();
+    this.drawHpBar();
+  }
+  drawHpBar(): void {
+    this.ctx.fillStyle = "white";
+    this.ctx.fillRect(
+      this.position.x / 1.28 - this.image.width / this.frames,
+      5,
+      100,
+      5
+    );
+    this.ctx.fillStyle = "red";
+    this.ctx.fillRect(
+      this.position.x / 1.28 - this.image.width / this.frames,
+      5,
+      this.hp,
+      5
+    );
   }
 }
