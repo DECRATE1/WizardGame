@@ -6,13 +6,20 @@ export class Spell extends Sprite {
   frames: number;
   isDynamic: boolean;
   currentFrame: number = 0;
-  defaultPos: number;
+
   dmg?: number;
   velocity?: number;
   deltaTime?: number;
   fn?: () => void;
   timer: number = 0;
   time?: number;
+  abilityIsUsed = false;
+  defaultParams: {
+    pos: { x: number };
+    timer?: number;
+    dmg?: number;
+    velocity?: number;
+  };
   constructor({
     id,
     isDynamic,
@@ -36,7 +43,6 @@ export class Spell extends Sprite {
     velocity?: number;
     deltaTime?: number;
     time?: number;
-
     fn: () => void;
   }) {
     super({ image, position, ctx });
@@ -46,7 +52,12 @@ export class Spell extends Sprite {
     this.velocity = velocity;
     this.deltaTime = deltaTime;
     this.fn = fn;
-    this.defaultPos = this.position.x;
+    this.defaultParams = {
+      pos: { x: this.position.x },
+      timer: this.timer,
+      dmg: this.dmg,
+      velocity: this.velocity,
+    };
     this.time = time;
     this.isDynamic = isDynamic;
   }
@@ -77,22 +88,30 @@ export class Spell extends Sprite {
       }
       this.position.x += this.velocity!;
       return;
-    }
+    } else {
+      if (this.timer <= this.time!) {
+        !this.abilityIsUsed ? this.useAbility() : "";
+        this.timer += this.deltaTime!;
+        return;
+      }
 
-    this.timer += this.deltaTime!;
-    if (this.timer <= this.time!) {
-      this.useAbility();
-
+      this.fn!();
+      this.abilityIsUsed = false;
+      this.setTimerToDefault();
+      spellManager.removeFromQueue({ id: this.id });
       return;
     }
+  }
+
+  setTimerToDefault() {
     this.timer = 0;
-    spellManager.removeFromQueue({ id: this.id });
   }
 
   isColiding() {
     if (
-      this.position.x >= enemy.position.x - 32 &&
-      this.position.x <= enemy.position.x
+      (this.position.x >= enemy.position.x - 32 &&
+        this.position.x <= enemy.position.x) ||
+      this.position.x >= import.meta.env.VITE_CANVAS_WIDTH
     ) {
       return true;
     }
@@ -101,13 +120,15 @@ export class Spell extends Sprite {
 
   private onCollision() {
     this.useAbility();
-    this.position.x = this.defaultPos;
+    this.position.x = this.defaultParams.pos.x;
     spellManager.removeFromQueue({ id: this.id });
     return;
   }
 
   private useAbility() {
-    if (this.fn) this.fn();
-    return;
+    if (this.fn) {
+      this.fn();
+      this.abilityIsUsed = true;
+    }
   }
 }

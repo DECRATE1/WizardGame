@@ -4,6 +4,7 @@ export class Player extends Sprite {
   frames: number;
   currentFrame: number = 0;
   hp = 100;
+  prevHealth;
   constructor({
     image,
     position,
@@ -17,7 +18,9 @@ export class Player extends Sprite {
   }) {
     super({ image, position, ctx });
     this.frames = frames;
+    this.prevHealth = this.hp;
   }
+
   draw(): void {
     if (this.isLoad) {
       this.ctx.drawImage(

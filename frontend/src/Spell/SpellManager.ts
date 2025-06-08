@@ -1,9 +1,15 @@
 import type { Spell } from "./Spell";
 
 export class SpellManager {
+  velocityBuff = 0;
   private spellMap = new Map();
   spellCast: string = "";
   spellQueue = new Map();
+
+  getMap = () => {
+    return this.spellMap;
+  };
+
   addSpellToMap = ({ id, value }: { id: number; value: Spell }) => {
     this.spellMap.set(id, value);
   };

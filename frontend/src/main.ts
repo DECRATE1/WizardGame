@@ -85,7 +85,7 @@ const fireball = new Spell({
   isDynamic: true,
   ctx,
   frames: 1,
-  velocity: 2,
+  velocity: 1,
   id: 111,
   dmg: 10,
   fn: () => (enemy.hp -= fireball.dmg!),
@@ -104,13 +104,23 @@ const shield = new Spell({
   time: 200,
   id: 626,
   fn: () => {
-    player.hp = 110;
-    if (shield.timer >= shield.time!) {
-      player.hp = 100;
-    }
+    player.hp += 10;
   },
 });
 
+const wind = new Spell({
+  image: "",
+  position: { x: 0, y: 0 },
+  isDynamic: false,
+  deltaTime: 1,
+  ctx,
+  frames: 0,
+  time: 200,
+  id: 444,
+  fn: () => {},
+});
+
+spellManager.addSpellToMap({ id: wind.id, value: wind });
 spellManager.addSpellToMap({ id: fireball.id, value: fireball });
 spellManager.addSpellToMap({ id: shield.id, value: shield });
 
@@ -139,11 +149,16 @@ function render() {
   player.draw();
   enemy.draw();
 
-  spellManager
-    .getQueue()
-    .map((spell: any) =>
-      spell.type === "dynamic" ? spell.update() : spell.update({ deltaTime: 1 })
-    );
+  spellManager.getQueue().map((spell: any) => {
+    if (spell.isDynamic) {
+      spell.velocity += spellManager.velocityBuff;
+      spell.update();
+      return;
+    }
+
+    spell.update();
+    return;
+  });
 
   window.requestAnimationFrame(render);
 }
