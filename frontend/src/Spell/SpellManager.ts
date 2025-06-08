@@ -1,17 +1,10 @@
-import { DynamicSpell } from "./DynamicSpell";
-import { StaticSpell } from "./StaticSpell";
+import type { Spell } from "./Spell";
 
 export class SpellManager {
   private spellMap = new Map();
   spellCast: string = "";
-  spellQueue = new Map<number, DynamicSpell | StaticSpell>();
-  addSpellToMap = ({
-    id,
-    value,
-  }: {
-    id: number;
-    value: StaticSpell | DynamicSpell;
-  }) => {
+  spellQueue = new Map();
+  addSpellToMap = ({ id, value }: { id: number; value: Spell }) => {
     this.spellMap.set(id, value);
   };
 
@@ -20,12 +13,12 @@ export class SpellManager {
     return this.spellMap;
   };
 
-  getSpell = ({ id }: { id: number }): StaticSpell | DynamicSpell => {
+  getSpell = ({ id }: { id: number }): Spell => {
     return this.spellMap.get(id);
   };
 
   addToCasting = ({ id }: { id: number }) => {
-    const spell: StaticSpell | DynamicSpell = this.getSpell({ id });
+    const spell: Spell = this.getSpell({ id });
     if (spell) this.spellQueue.set(id, spell);
   };
 

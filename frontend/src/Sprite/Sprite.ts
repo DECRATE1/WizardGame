@@ -3,6 +3,7 @@ export class Sprite {
   position: { x: number; y: number };
   isLoad = false;
   ctx: CanvasRenderingContext2D;
+
   constructor({
     image,
     position,
@@ -17,6 +18,7 @@ export class Sprite {
       this.isLoad = true;
     };
     this.position = position;
+
     this.ctx = ctx;
   }
 

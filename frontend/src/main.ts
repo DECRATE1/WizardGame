@@ -1,8 +1,9 @@
 import { Enemy } from "./Enemy/Enemy";
 import { Player } from "./Player/Player";
-import { DynamicSpell } from "./Spell/DynamicSpell";
+import { Spell } from "./Spell/Spell";
+
 import { SpellManager } from "./Spell/SpellManager";
-import { StaticSpell } from "./Spell/StaticSpell";
+
 import { Sprite } from "./Sprite/Sprite";
 import "./style.css";
 
@@ -75,26 +76,39 @@ export const ctx = canvas.getContext("2d")!;
 
 export const spellManager = new SpellManager();
 
-const fireball = new DynamicSpell({
+const fireball = new Spell({
   image: "/fireball (3).png",
-  position: { x: 100, y: Math.round(canvas.height / 1.32) },
+  position: {
+    x: 100,
+    y: Math.round(import.meta.env.VITE_CANVAS_HEIGHT / 1.32),
+  },
+  isDynamic: true,
   ctx,
   frames: 1,
-  velocity: 1,
+  velocity: 2,
   id: 111,
   dmg: 10,
+  fn: () => (enemy.hp -= fireball.dmg!),
 });
 
-const shield = new StaticSpell({
+const shield = new Spell({
   image: "/Shield.png",
   position: {
-    x: canvas.width / 2 + 16,
+    x: import.meta.env.VITE_CANVAS_WIDTH / 2 + 16,
     y: canvas.height / 2.5,
   },
+  isDynamic: false,
+  deltaTime: 1,
   ctx,
   frames: 1,
-  time: 300,
+  time: 200,
   id: 626,
+  fn: () => {
+    player.hp = 110;
+    if (shield.timer >= shield.time!) {
+      player.hp = 100;
+    }
+  },
 });
 
 spellManager.addSpellToMap({ id: fireball.id, value: fireball });
@@ -128,9 +142,7 @@ function render() {
   spellManager
     .getQueue()
     .map((spell: any) =>
-      spell.type === "dynamic"
-        ? spell.update({ enemyPos: { x: enemy.position.x } })
-        : spell.update({ deltaTime: 1 })
+      spell.type === "dynamic" ? spell.update() : spell.update({ deltaTime: 1 })
     );
 
   window.requestAnimationFrame(render);
