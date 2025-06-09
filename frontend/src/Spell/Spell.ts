@@ -31,6 +31,7 @@ export class Spell extends Sprite {
     velocity,
     deltaTime,
     time,
+
     fn,
   }: {
     id: number;
@@ -42,6 +43,7 @@ export class Spell extends Sprite {
     dmg?: number;
     velocity?: number;
     deltaTime?: number;
+
     time?: number;
     fn: () => void;
   }) {
@@ -58,6 +60,7 @@ export class Spell extends Sprite {
       dmg: this.dmg,
       velocity: this.velocity,
     };
+
     this.time = time;
     this.isDynamic = isDynamic;
   }
@@ -95,7 +98,6 @@ export class Spell extends Sprite {
         return;
       }
 
-      this.fn!();
       this.abilityIsUsed = false;
       this.setTimerToDefault();
       spellManager.removeFromQueue({ id: this.id });
@@ -120,6 +122,7 @@ export class Spell extends Sprite {
 
   private onCollision() {
     this.useAbility();
+    enemy.takeADamage();
     this.position.x = this.defaultParams.pos.x;
     spellManager.removeFromQueue({ id: this.id });
     return;

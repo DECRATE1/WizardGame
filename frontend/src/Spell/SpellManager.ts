@@ -1,7 +1,6 @@
 import type { Spell } from "./Spell";
 
 export class SpellManager {
-  velocityBuff = 0;
   private spellMap = new Map();
   spellCast: string = "";
   spellQueue = new Map();

@@ -8,9 +8,24 @@ import { Sprite } from "./Sprite/Sprite";
 import "./style.css";
 
 export const SpellMap = new Map<number, any>();
+
 const section = document.createElement("div");
 const board = document.createElement("div");
 const button = document.createElement("div");
+const castLine = document.createElement("div");
+castLine.id = "castLine";
+
+castLine.style.width = "523px";
+castLine.style.height = "64px";
+castLine.style.backgroundColor = "blue";
+castLine.style.position = "absolute";
+castLine.style.top = "64px";
+castLine.style.left = import.meta.env.VITE_CANVAS_WIDTH / 3.1 + "px";
+castLine.style.display = "flex";
+castLine.style.overflow = "hidden";
+castLine.style.flexWrap = "nowrap";
+castLine.style.gap = "11px";
+
 section.style.display = "flex";
 section.style.flexDirection = "column";
 section.style.position = "absolute";
@@ -21,14 +36,19 @@ section.style.justifyItems = "center";
 section.style.alignItems = "center";
 section.style.marginTop = "20px";
 
-button.innerHTML = "submit";
+button.style.backgroundImage = `url('/button.png')`;
 button.style.textAlign = "center";
 button.style.color = "white";
-button.style.width = "100%";
-button.style.height = "30px";
+button.style.width = "128px";
+button.style.height = "128px";
+button.style.backgroundSize = "cover";
+button.style.backgroundRepeat = "no-repeat";
 button.onclick = () => {
   spellManager.addToCasting({ id: +spellManager.spellCast });
   spellManager.spellCast = "";
+  while (castLine.firstChild) {
+    castLine.removeChild(castLine.lastChild as ChildNode);
+  }
 };
 
 board.id = "#board";
@@ -54,7 +74,21 @@ for (let i = 0; i < 9; i++) {
   button.style.color = "red";
   button.addEventListener("click", () => {
     spellManager.spellCast += i + 1;
+
     button.style.filter = "opacity(20%)";
+    if (castLine) {
+      const div = document.createElement("div");
+      div.style.backgroundImage = `url('/${i}.png')`;
+      div.style.backgroundRepeat = "no-repeat";
+      div.style.backgroundSize = "cover";
+
+      div.style.width = "64px";
+      div.style.height = "64px";
+
+      div.style.flexShrink = "0";
+
+      castLine.appendChild(div);
+    }
     setTimeout(() => {
       button.style.filter = "none";
     }, 200);
@@ -65,6 +99,7 @@ for (let i = 0; i < 9; i++) {
 section.appendChild(board);
 section.appendChild(button);
 document.body.appendChild(section);
+document.body.appendChild(castLine);
 
 export const canvas = document.querySelector("#game") as HTMLCanvasElement;
 
@@ -82,6 +117,7 @@ const fireball = new Spell({
     x: 100,
     y: Math.round(import.meta.env.VITE_CANVAS_HEIGHT / 1.32),
   },
+
   isDynamic: true,
   ctx,
   frames: 1,
@@ -97,6 +133,7 @@ const shield = new Spell({
     x: import.meta.env.VITE_CANVAS_WIDTH / 2 + 16,
     y: canvas.height / 2.5,
   },
+
   isDynamic: false,
   deltaTime: 1,
   ctx,
@@ -104,7 +141,7 @@ const shield = new Spell({
   time: 200,
   id: 626,
   fn: () => {
-    player.hp += 10;
+    player.hp <= 150 ? (player.hp += 10) : "";
   },
 });
 
@@ -117,7 +154,14 @@ const wind = new Spell({
   frames: 0,
   time: 200,
   id: 444,
-  fn: () => {},
+  fn: () => {
+    spellManager.getQueue().forEach((spell: any) => {
+      spell.velocity += 10;
+      setTimeout(() => {
+        spell.velocity = spell.defaultParams.velocity;
+      }, wind.time! * 10);
+    });
+  },
 });
 
 spellManager.addSpellToMap({ id: wind.id, value: wind });
@@ -144,14 +188,23 @@ export const enemy = new Enemy({
   frames: 2,
 });
 
+export const staff = new Sprite({
+  image: "/Staff.png",
+  position: {
+    x: player.position.x - player.image.width / 2 - 32,
+    y: player.position.y - 32,
+  },
+  ctx,
+});
+
 function render() {
   background.draw();
   player.draw();
   enemy.draw();
+  staff.draw();
 
   spellManager.getQueue().map((spell: any) => {
     if (spell.isDynamic) {
-      spell.velocity += spellManager.velocityBuff;
       spell.update();
       return;
     }

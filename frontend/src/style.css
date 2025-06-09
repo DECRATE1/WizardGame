@@ -21,3 +21,9 @@ div {
   background-repeat: no-repeat;
   color: red;
 }
+
+#board div {
+  width: 16px;
+  height: 16px;
+  background-repeat: no-repeat;
+}

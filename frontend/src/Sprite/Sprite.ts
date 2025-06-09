@@ -24,7 +24,7 @@ export class Sprite {
 
   draw() {
     if (this.isLoad) {
-      this.ctx.drawImage(this.image, 0, 0);
+      this.ctx.drawImage(this.image, this.position.x, this.position.y);
     }
   }
 }
