@@ -1,12 +1,12 @@
-import { enemy, spellManager } from "../main";
+import { game } from "../main";
 import { Sprite } from "../Sprite/Sprite";
+import { spellManager } from "./SpellManager";
 
 export class Spell extends Sprite {
   id: number;
   frames: number;
   isDynamic: boolean;
   currentFrame: number = 0;
-
   dmg?: number;
   velocity?: number;
   deltaTime?: number;
@@ -111,8 +111,8 @@ export class Spell extends Sprite {
 
   isColiding() {
     if (
-      (this.position.x >= enemy.position.x - 32 &&
-        this.position.x <= enemy.position.x) ||
+      (this.position.x >= game.enemy.position.x - 32 &&
+        this.position.x <= game.enemy.position.x) ||
       this.position.x >= import.meta.env.VITE_CANVAS_WIDTH
     ) {
       return true;
@@ -122,7 +122,7 @@ export class Spell extends Sprite {
 
   private onCollision() {
     this.useAbility();
-    enemy.takeADamage();
+    game.enemy.takeADamage();
     this.position.x = this.defaultParams.pos.x;
     spellManager.removeFromQueue({ id: this.id });
     return;

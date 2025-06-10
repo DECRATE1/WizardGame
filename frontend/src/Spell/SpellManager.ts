@@ -1,4 +1,5 @@
-import type { Spell } from "./Spell";
+import { game } from "../main";
+import { Spell } from "./Spell";
 
 export class SpellManager {
   private spellMap = new Map();
@@ -36,3 +37,5 @@ export class SpellManager {
     return Array.from(this.spellQueue.values());
   };
 }
+
+export const spellManager = new SpellManager();
