@@ -1,5 +1,4 @@
 import { Enemy } from "../Enemy/Enemy";
-import { drawAGame } from "../main";
 
 import { Player } from "../Player/Player";
 import { spellManager } from "../Spell/SpellManager";
@@ -12,6 +11,10 @@ export class Game {
   background: Sprite;
   player: Player;
   enemy: Enemy;
+  rectW = 0;
+  transitionCanvas = document.createElement("canvas");
+  transitionCanvasCtx = this.transitionCanvas.getContext("2d");
+
   constructor({
     canvas,
     ctx,
@@ -43,6 +46,14 @@ export class Game {
       ctx: this.ctx,
       frames: 2,
     });
+    this.transitionCanvas.style.position = "absolute";
+    this.transitionCanvas.style.left = "0px";
+    this.transitionCanvas.style.top = "0px";
+    this.transitionCanvas.style.zIndex = "-10";
+    this.transitionCanvas.width = import.meta.env.VITE_CANVAS_WIDTH;
+    this.transitionCanvas.height = import.meta.env.VITE_CANVAS_HEIGHT;
+
+    document.body.appendChild(this.transitionCanvas);
     this.render();
   }
 
@@ -62,5 +73,53 @@ export class Game {
         return;
       });
     }
+  }
+
+  transition() {
+    if (this.transitionCanvasCtx) {
+      this.transitionCanvas.style.zIndex = "10";
+      this.transitionCanvasCtx.fillStyle = "red";
+      this.playForward();
+    }
+  }
+
+  private playForward() {
+    if (this.transitionCanvasCtx) {
+      this.transitionCanvasCtx.clearRect(
+        0,
+        0,
+        this.canvas.width,
+        this.canvas.height
+      );
+      this.transitionCanvasCtx.fillRect(0, 0, this.rectW, this.canvas.height);
+    }
+    const animationId = window.requestAnimationFrame(() => this.playForward());
+    if (this.rectW >= this.canvas.width) {
+      window.cancelAnimationFrame(animationId);
+      this.state = "game";
+      this.playBackward();
+
+      return;
+    }
+    this.rectW += 1;
+  }
+
+  private playBackward() {
+    if (this.transitionCanvasCtx) {
+      this.transitionCanvasCtx.clearRect(
+        0,
+        0,
+        this.canvas.width,
+        this.canvas.height
+      );
+      this.transitionCanvasCtx.fillRect(0, 0, this.rectW, this.canvas.height);
+    }
+    const animationId = window.requestAnimationFrame(() => this.playBackward());
+    if (this.rectW <= 0) {
+      window.cancelAnimationFrame(animationId);
+      return;
+    }
+    console.log(1);
+    this.rectW -= 1;
   }
 }

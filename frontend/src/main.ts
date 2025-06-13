@@ -42,6 +42,7 @@ export function drawAGame() {
   button.onclick = () => {
     spellManager.addToCasting({ id: +spellManager.spellCast });
     spellManager.spellCast = "";
+
     while (castLine.firstChild) {
       castLine.removeChild(castLine.lastChild as ChildNode);
     }
@@ -77,12 +78,9 @@ export function drawAGame() {
         div.style.backgroundImage = `url('/${i}.png')`;
         div.style.backgroundRepeat = "no-repeat";
         div.style.backgroundSize = "cover";
-
         div.style.width = "64px";
         div.style.height = "64px";
-
         div.style.flexShrink = "0";
-
         castLine.appendChild(div);
       }
       setTimeout(() => {
@@ -172,12 +170,12 @@ gameButton.style.position = "absolute";
 gameButton.style.left = "0px";
 gameButton.style.top = "0px";
 gameButton.addEventListener("click", () => {
-  game.state = "game";
+  game.transition();
   drawAGame();
   gameButton.style.visibility = "hidden";
 });
 document.body.appendChild(gameButton);
-
+canvas.style.backgroundColor = "black";
 function render() {
   game.render();
   window.requestAnimationFrame(render);
