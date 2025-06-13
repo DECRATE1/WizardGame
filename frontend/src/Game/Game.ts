@@ -1,4 +1,5 @@
 import { Enemy } from "../Enemy/Enemy";
+import { drawAGame } from "../main";
 
 import { Player } from "../Player/Player";
 import { spellManager } from "../Spell/SpellManager";
@@ -75,15 +76,15 @@ export class Game {
     }
   }
 
-  transition() {
+  transition({ state }: { state: "menu" | "game" }) {
     if (this.transitionCanvasCtx) {
       this.transitionCanvas.style.zIndex = "10";
       this.transitionCanvasCtx.fillStyle = "red";
-      this.playForward();
+      this.playForward({ state });
     }
   }
 
-  private playForward() {
+  private playForward({ state }: { state: "menu" | "game" }) {
     if (this.transitionCanvasCtx) {
       this.transitionCanvasCtx.clearRect(
         0,
@@ -93,10 +94,13 @@ export class Game {
       );
       this.transitionCanvasCtx.fillRect(0, 0, this.rectW, this.canvas.height);
     }
-    const animationId = window.requestAnimationFrame(() => this.playForward());
+    const animationId = window.requestAnimationFrame(() =>
+      this.playForward({ state })
+    );
     if (this.rectW >= this.canvas.width) {
       window.cancelAnimationFrame(animationId);
-      this.state = "game";
+      this.state = state;
+      drawAGame();
       this.playBackward();
 
       return;
