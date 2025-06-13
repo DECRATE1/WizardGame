@@ -170,7 +170,7 @@ gameButton.style.position = "absolute";
 gameButton.style.left = "0px";
 gameButton.style.top = "0px";
 gameButton.addEventListener("click", () => {
-  game.transition({ state: "game" });
+  game.transition.forwardAnimation();
   gameButton.style.visibility = "hidden";
 });
 document.body.appendChild(gameButton);

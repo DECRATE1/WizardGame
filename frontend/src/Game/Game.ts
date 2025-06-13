@@ -1,9 +1,9 @@
 import { Enemy } from "../Enemy/Enemy";
-import { drawAGame } from "../main";
 
 import { Player } from "../Player/Player";
 import { spellManager } from "../Spell/SpellManager";
 import { Sprite } from "../Sprite/Sprite";
+import { Transition } from "../Transition/Transition";
 
 export class Game {
   state: "menu" | "game" = "menu";
@@ -12,10 +12,7 @@ export class Game {
   background: Sprite;
   player: Player;
   enemy: Enemy;
-  rectW = 0;
-  transitionCanvas = document.createElement("canvas");
-  transitionCanvasCtx = this.transitionCanvas.getContext("2d");
-
+  transition = new Transition();
   constructor({
     canvas,
     ctx,
@@ -47,14 +44,7 @@ export class Game {
       ctx: this.ctx,
       frames: 2,
     });
-    this.transitionCanvas.style.position = "absolute";
-    this.transitionCanvas.style.left = "0px";
-    this.transitionCanvas.style.top = "0px";
-    this.transitionCanvas.style.zIndex = "-10";
-    this.transitionCanvas.width = import.meta.env.VITE_CANVAS_WIDTH;
-    this.transitionCanvas.height = import.meta.env.VITE_CANVAS_HEIGHT;
 
-    document.body.appendChild(this.transitionCanvas);
     this.render();
   }
 
@@ -76,7 +66,7 @@ export class Game {
     }
   }
 
-  transition({ state }: { state: "menu" | "game" }) {
+  /*transition({ state }: { state: "menu" | "game" }) {
     if (this.transitionCanvasCtx) {
       this.transitionCanvas.style.zIndex = "10";
       this.transitionCanvasCtx.fillStyle = "red";
@@ -125,5 +115,5 @@ export class Game {
     }
     console.log(1);
     this.rectW -= 1;
-  }
+  }*/
 }
