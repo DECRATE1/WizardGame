@@ -1,4 +1,4 @@
-import { drawAGame, game } from "../main";
+import { game } from "../main";
 
 export class Transition {
   firstLine = { x: 0, y: 0, w: 0 };
@@ -58,9 +58,9 @@ export class Transition {
         Math.floor(this.canvas.height / 3.5)
       );
 
-      this.firstLine.w += 1;
-      this.secondLine.w -= 1;
-      this.thirdLine.w += 1;
+      this.firstLine.w += 2;
+      this.secondLine.w -= 2;
+      this.thirdLine.w += 2;
 
       const animationId = window.requestAnimationFrame(() =>
         this.forwardAnimation()
@@ -75,7 +75,7 @@ export class Transition {
 
         this.backwardAnimation();
         game.state = "game";
-        drawAGame();
+        game.drawAGameScene();
         return;
       }
     }
@@ -111,9 +111,9 @@ export class Transition {
         Math.floor(this.canvas.height / 3.5)
       );
 
-      this.firstLine.w -= 1;
-      this.secondLine.w += 1;
-      this.thirdLine.w -= 1;
+      this.firstLine.w -= 2;
+      this.secondLine.w += 2;
+      this.thirdLine.w -= 2;
     }
     const animationId = window.requestAnimationFrame(() =>
       this.backwardAnimation()
