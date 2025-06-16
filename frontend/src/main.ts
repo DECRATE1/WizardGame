@@ -69,19 +69,17 @@ spellManager.addSpellToMap({ id: wind.id, value: wind });
 spellManager.addSpellToMap({ id: fireball.id, value: fireball });
 spellManager.addSpellToMap({ id: shield.id, value: shield });
 
-const gameButton = document.createElement("button");
-
-gameButton.innerHTML = "game";
-gameButton.style.width = "100px";
-gameButton.style.height = "100px";
-gameButton.style.backgroundColor = "red";
+const gameButton = document.createElement("div");
+gameButton.id = "gameButton";
+gameButton.innerHTML = "play";
+gameButton.style.left = import.meta.env.VITE_CANVAS_WIDTH / 4 + "px";
+gameButton.style.top = import.meta.env.VITE_CANVAS_HEIGHT + "px";
 gameButton.style.position = "absolute";
-gameButton.style.left = "0px";
-gameButton.style.top = "0px";
 gameButton.addEventListener("click", () => {
-  game.transition.forwardAnimation();
+  game.transition.forwardAnimation({ stateTo: "lobbyList" });
   gameButton.style.visibility = "hidden";
 });
+
 document.body.appendChild(gameButton);
 canvas.style.backgroundColor = "black";
 function render() {

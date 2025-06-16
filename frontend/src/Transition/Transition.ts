@@ -27,7 +27,11 @@ export class Transition {
     document.body.appendChild(this.canvas);
   }
 
-  forwardAnimation() {
+  forwardAnimation({
+    stateTo,
+  }: {
+    stateTo: "menu" | "game" | "lobbyList" | "lobby";
+  }) {
     this.canvas.style.zIndex = "10";
     if (this.ctx) {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -63,7 +67,7 @@ export class Transition {
       this.thirdLine.w += 2;
 
       const animationId = window.requestAnimationFrame(() =>
-        this.forwardAnimation()
+        this.forwardAnimation({ stateTo })
       );
 
       if (
@@ -74,8 +78,8 @@ export class Transition {
         window.cancelAnimationFrame(animationId);
 
         this.backwardAnimation();
-        game.state = "game";
-        game.drawAGameScene();
+        game.state = stateTo;
+        game.drawALobbyList();
         return;
       }
     }

@@ -1,4 +1,5 @@
 import { Enemy } from "../Enemy/Enemy";
+import { game } from "../main";
 
 import { Player } from "../Player/Player";
 import { spellManager } from "../Spell/SpellManager";
@@ -6,7 +7,7 @@ import { Sprite } from "../Sprite/Sprite";
 import { Transition } from "../Transition/Transition";
 
 export class Game {
-  state: "menu" | "game" = "menu";
+  state: "menu" | "game" | "lobbyList" | "lobby" = "menu";
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   background: Sprite;
@@ -207,5 +208,36 @@ export class Game {
     section.appendChild(button);
     document.body.appendChild(section);
     document.body.appendChild(castLine);
+  }
+
+  drawALobbyList() {
+    if (game.state === "lobby") {
+      const gamesList = [
+        { lobbyName: "Name1", id: 1 },
+        { lobbyName: "Name2", id: 2 },
+      ];
+
+      const gameListContainer = document.createElement("div");
+      gameListContainer.id = "gameListContainer";
+
+      gamesList.map((item) => {
+        const lobby = document.createElement("div");
+        lobby.id = "lobby";
+        const lobbyName = document.createElement("span");
+        const joinButton = document.createElement("div");
+        lobbyName.id = "lobbyName";
+        lobbyName.innerHTML = item.lobbyName;
+        joinButton.id = "joinButton";
+        joinButton.innerHTML = "join";
+        joinButton.addEventListener("click", () => {
+          game.transition.forwardAnimation({ stateTo: "lobby" });
+        });
+        lobby.appendChild(lobbyName);
+        lobby.appendChild(joinButton);
+        gameListContainer.appendChild(lobby);
+      });
+
+      document.body.appendChild(gameListContainer);
+    }
   }
 }
