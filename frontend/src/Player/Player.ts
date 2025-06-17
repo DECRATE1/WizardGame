@@ -35,8 +35,6 @@ export class Player extends Sprite {
         this.image.height
       );
     }
-    this.createHitbox();
-    this.drawHpBar();
   }
 
   createHitbox(): void {

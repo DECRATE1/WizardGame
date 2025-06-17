@@ -50,20 +50,40 @@ export class Game {
   }
 
   render() {
-    if (this.state === "game") {
-      this.background.draw();
-      this.player.draw();
-      this.enemy.draw();
+    switch (this.state) {
+      case "game": {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.player.position = {
+          x: 140,
+          y: Math.round(this.canvas.height / 1.3),
+        };
+        this.background.draw();
 
-      spellManager.getQueue().map((spell: any) => {
-        if (spell.isDynamic) {
+        this.player.draw();
+        this.player.createHitbox();
+        this.player.drawHpBar();
+        this.enemy.draw();
+        this.drawAGameScene();
+
+        spellManager.getQueue().map((spell: any) => {
+          if (spell.isDynamic) {
+            spell.update();
+            return;
+          }
+
           spell.update();
           return;
-        }
-
-        spell.update();
-        return;
-      });
+        });
+        break;
+      }
+      case "lobbyList": {
+        this.drawALobbyList();
+        break;
+      }
+      case "lobby": {
+        this.drawALobby();
+        break;
+      }
     }
   }
 
@@ -119,7 +139,13 @@ export class Game {
   }*/
 
   drawAGameScene() {
+    if (
+      document.getElementById("section") &&
+      document.getElementById("castLine")
+    )
+      return;
     const section = document.createElement("div");
+    section.id = "section";
     const board = document.createElement("div");
     const button = document.createElement("div");
     const castLine = document.createElement("div");
@@ -211,33 +237,54 @@ export class Game {
   }
 
   drawALobbyList() {
-    if (game.state === "lobby") {
-      const gamesList = [
-        { lobbyName: "Name1", id: 1 },
-        { lobbyName: "Name2", id: 2 },
-      ];
+    const gamesList = [
+      { lobbyName: "Name1", id: 1 },
+      { lobbyName: "Name2", id: 2 },
+    ];
+    if (document.getElementById("gameListContainer") !== null) return;
+    const gameListContainer = document.createElement("div");
+    gameListContainer.id = "gameListContainer";
 
-      const gameListContainer = document.createElement("div");
-      gameListContainer.id = "gameListContainer";
-
-      gamesList.map((item) => {
-        const lobby = document.createElement("div");
-        lobby.id = "lobby";
-        const lobbyName = document.createElement("span");
-        const joinButton = document.createElement("div");
-        lobbyName.id = "lobbyName";
-        lobbyName.innerHTML = item.lobbyName;
-        joinButton.id = "joinButton";
-        joinButton.innerHTML = "join";
-        joinButton.addEventListener("click", () => {
-          game.transition.forwardAnimation({ stateTo: "lobby" });
-        });
-        lobby.appendChild(lobbyName);
-        lobby.appendChild(joinButton);
-        gameListContainer.appendChild(lobby);
+    gamesList.map((item) => {
+      const lobby = document.createElement("div");
+      lobby.id = "lobby";
+      const lobbyName = document.createElement("span");
+      const joinButton = document.createElement("div");
+      lobbyName.id = "lobbyName";
+      lobbyName.innerHTML = item.lobbyName;
+      joinButton.id = "joinButton";
+      joinButton.innerHTML = "join";
+      joinButton.addEventListener("click", () => {
+        game.transition.forwardAnimation({ stateTo: "lobby" });
+        setTimeout(() => {
+          gameListContainer.childNodes.forEach(
+            (child: any) => (child.style.visibility = "hidden")
+          );
+        }, 2005);
       });
+      lobby.appendChild(lobbyName);
+      lobby.appendChild(joinButton);
+      gameListContainer.appendChild(lobby);
+    });
 
-      document.body.appendChild(gameListContainer);
-    }
+    document.body.appendChild(gameListContainer);
+  }
+
+  drawALobby() {
+    this.player.position = {
+      x: this.player.position.x,
+      y: Math.floor(import.meta.env.VITE_CANVAS_HEIGHT / 2.5),
+    };
+
+    this.player.draw();
+    if (document.getElementById("playButton") !== null) return;
+    const playButton = document.createElement("div");
+    playButton.id = "playButton";
+    playButton.innerHTML = "START";
+    playButton.addEventListener("click", () => {
+      game.transition.forwardAnimation({ stateTo: "game" });
+      playButton.style.visibility = "hidden";
+    });
+    document.body.appendChild(playButton);
   }
 }
