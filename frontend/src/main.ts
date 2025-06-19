@@ -10,6 +10,26 @@ if (!canvas) {
 }
 export const ctx = canvas.getContext("2d")!;
 
+function isLogin() {
+  if (window.localStorage.getItem("token") !== null) {
+    gameButton.style.visibility = "auto";
+  }
+  gameButton.style.visibility = "hidden";
+}
+
+const signUp = document.getElementById("signUp");
+const signIn = document.getElementById("signIn");
+signIn?.addEventListener("click", () => {
+  console.log(1);
+  signIn.style.display = "none";
+  signUp!.style.display = "block";
+});
+
+signUp?.addEventListener("click", () => {
+  signIn!.style.display = "block";
+  signUp!.style.display = "none";
+});
+
 export const game = new Game({ ctx, canvas });
 
 const fireball = new Spell({
@@ -18,7 +38,6 @@ const fireball = new Spell({
     x: 100,
     y: Math.round(import.meta.env.VITE_CANVAS_HEIGHT / 1.32),
   },
-
   isDynamic: true,
   ctx: game.ctx,
   frames: 1,
@@ -70,6 +89,7 @@ spellManager.addSpellToMap({ id: fireball.id, value: fireball });
 spellManager.addSpellToMap({ id: shield.id, value: shield });
 
 const gameButton = document.createElement("div");
+
 gameButton.id = "gameButton";
 gameButton.innerHTML = "play";
 gameButton.style.left = import.meta.env.VITE_CANVAS_WIDTH / 4 + "px";
@@ -83,6 +103,7 @@ gameButton.addEventListener("click", () => {
 document.body.appendChild(gameButton);
 canvas.style.backgroundColor = "black";
 function render() {
+  isLogin();
   game.render();
   window.requestAnimationFrame(render);
 }
