@@ -24,6 +24,7 @@ export class Transition {
     this.canvas.style.left = "0px";
     this.canvas.style.top = "0px";
     this.canvas.style.zIndex = "-10";
+
     document.body.appendChild(this.canvas);
   }
 
@@ -36,7 +37,6 @@ export class Transition {
     if (this.ctx) {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.ctx.fillStyle = "white";
-
       this.ctx.fillRect(
         this.firstLine.x,
         this.firstLine.y,
@@ -45,7 +45,6 @@ export class Transition {
       );
 
       this.ctx.fillStyle = "blue";
-
       this.ctx.fillRect(
         this.secondLine.x,
         this.secondLine.y,
@@ -54,7 +53,6 @@ export class Transition {
       );
 
       this.ctx.fillStyle = "red";
-
       this.ctx.fillRect(
         this.thirdLine.x,
         this.thirdLine.y,
@@ -79,7 +77,6 @@ export class Transition {
 
         this.backwardAnimation();
         game.state = stateTo;
-        game.drawALobbyList();
         return;
       }
     }
