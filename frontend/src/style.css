@@ -53,6 +53,7 @@ body #gameListContainer {
   cursor: pointer;
 }
 #loginDiv {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding-left: 5px;
@@ -77,6 +78,14 @@ body #gameListContainer {
   gap: 2rem;
   width: 100%;
   margin-top: auto;
+}
+#message {
+  position: absolute;
+  top: 20px;
+  color: white;
+  text-transform: uppercase;
+  font-size: large;
+  font-weight: bold;
 }
 #loginDiv button {
   background: none;

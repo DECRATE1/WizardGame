@@ -13,12 +13,15 @@ export const ctx = canvas.getContext("2d")!;
 function isLogin() {
   if (
     localStorage.getItem("accessToken") !== null &&
-    localStorage.getItem("refreshToken") !== null
+    localStorage.getItem("accessToken") !== undefined &&
+    localStorage.getItem("refreshToken") !== null &&
+    localStorage.getItem("refreshToken") !== undefined
   ) {
     gameButton.style.display = "block";
     loginDiv!.style.display = "none";
     return;
   }
+  loginDiv!.style.display = "flex";
   gameButton.style.display = "none";
   return;
 }
@@ -78,7 +81,7 @@ async function getUser(username: string) {
     localStorage.setItem("accessToken", tokens.refresToken);
   }
 }
-getUser("DECRATE");
+
 const loginDiv = document.getElementById("loginDiv");
 const submitButton = document.getElementById("submitButton");
 const submitFunction = async () => {
@@ -95,9 +98,26 @@ const submitFunction = async () => {
       password: passwordInput.value,
     }),
   });
-  const data = await body.json();
-  localStorage.setItem("accessToken", data.accessToken);
-  localStorage.setItem("refreshToken", data.refreshToken);
+  if (body.ok) {
+    localStorage.setItem("username", usernameInput.value);
+    const data = await body.json();
+
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
+
+    return;
+  }
+
+  if (document.getElementById("message") !== null) {
+    const message = document.getElementById("message");
+    message!.style.display = "block";
+    return;
+  }
+  const message = document.createElement("div");
+  message.id = "message";
+  message.innerHTML = await JSON.parse(await body.text()).message;
+  loginDiv!.appendChild(message);
+  return;
 };
 submitButton!.onclick = (e) => {
   e.preventDefault();
@@ -110,6 +130,13 @@ signIn?.addEventListener("click", () => {
   usernameInput.value = "";
   passwordInput.value = "";
   signUpIsShown = false;
+
+  const message = document.getElementById("message");
+  if (message) {
+    message!.style.display = "none";
+    return;
+  }
+  message!.style.display = "";
 });
 
 signUp?.addEventListener("click", () => {
