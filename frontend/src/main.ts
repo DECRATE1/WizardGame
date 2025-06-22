@@ -43,12 +43,16 @@ passwordInput.addEventListener("change", (e) => {
 });
 inputContainer?.appendChild(usernameInput);
 inputContainer?.appendChild(passwordInput);
+
+async function getUserData() {
+  await fetch("");
+}
 const loginDiv = document.getElementById("loginDiv");
 const submitButton = document.getElementById("submitButton");
 const submitFunction = async () => {
   const url = signUpIsShown
-    ? "http://localhost:3000/api/user/create"
-    : "http://localhost:3000/api/user/login";
+    ? "http://localhost:3000/api/auth/signup"
+    : "http://localhost:3000/api/auth/signin";
   const body = await fetch(url, {
     method: "POST",
     headers: {
