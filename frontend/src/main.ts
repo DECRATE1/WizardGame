@@ -11,7 +11,10 @@ if (!canvas) {
 export const ctx = canvas.getContext("2d")!;
 
 function isLogin() {
-  if (window.localStorage.getItem("token") !== null) {
+  if (
+    localStorage.getItem("accessToken") !== null &&
+    localStorage.getItem("refreshToken") !== null
+  ) {
     gameButton.style.display = "block";
     loginDiv!.style.display = "none";
     return;
@@ -44,9 +47,38 @@ passwordInput.addEventListener("change", (e) => {
 inputContainer?.appendChild(usernameInput);
 inputContainer?.appendChild(passwordInput);
 
-async function getUserData() {
-  await fetch("");
+async function getUser(username: string) {
+  const accessToken = localStorage.getItem("accessToken");
+  const refreshToken = localStorage.getItem("refreshToken");
+
+  const isValid = await fetch(
+    `http://localhost:3000/api/user/getByUsername/?username=${username}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: "GET",
+    }
+  );
+
+  if (!isValid.ok) {
+    const tokens = await fetch("http://localhost:3000/api/auth/refresh", {
+      headers: {
+        Authorization: `Bearer ${refreshToken}`,
+      },
+      method: "GET",
+    }).then(async (tokens) => await tokens.json());
+
+    if (!tokens.ok) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refresToken");
+      return;
+    }
+    localStorage.setItem("accessToken", tokens.accessToken);
+    localStorage.setItem("accessToken", tokens.refresToken);
+  }
 }
+getUser("DECRATE");
 const loginDiv = document.getElementById("loginDiv");
 const submitButton = document.getElementById("submitButton");
 const submitFunction = async () => {
@@ -64,8 +96,8 @@ const submitFunction = async () => {
     }),
   });
   const data = await body.json();
-  const token = data.access_token;
-  localStorage.setItem("token", token);
+  localStorage.setItem("accessToken", data.accessToken);
+  localStorage.setItem("refreshToken", data.refreshToken);
 };
 submitButton!.onclick = (e) => {
   e.preventDefault();

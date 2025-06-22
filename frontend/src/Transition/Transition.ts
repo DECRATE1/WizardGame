@@ -24,7 +24,6 @@ export class Transition {
     this.canvas.style.left = "0px";
     this.canvas.style.top = "0px";
     this.canvas.style.zIndex = "-10";
-
     document.body.appendChild(this.canvas);
   }
 
