@@ -237,37 +237,55 @@ export class Game {
   }
 
   drawALobbyList() {
-    const gamesList = [
-      { lobbyName: "Name1", id: 1 },
-      { lobbyName: "Name2", id: 2 },
-    ];
-    if (document.getElementById("gameListContainer") !== null) return;
+    const list = document.getElementById("gameListContainer");
+
+    if (list) return;
+
     const gameListContainer = document.createElement("div");
     gameListContainer.id = "gameListContainer";
-
-    gamesList.map((item) => {
-      const lobby = document.createElement("div");
-      lobby.id = "lobby";
-      const lobbyName = document.createElement("span");
-      const joinButton = document.createElement("div");
-      lobbyName.id = "lobbyName";
-      lobbyName.innerHTML = item.lobbyName;
-      joinButton.id = "joinButton";
-      joinButton.innerHTML = "join";
-      joinButton.addEventListener("click", () => {
-        game.transition.forwardAnimation({ stateTo: "lobby" });
-        setTimeout(() => {
-          gameListContainer.childNodes.forEach(
-            (child: any) => (child.style.visibility = "hidden")
-          );
-        }, 2005);
-      });
-      lobby.appendChild(lobbyName);
-      lobby.appendChild(joinButton);
-      gameListContainer.appendChild(lobby);
-    });
-
     document.body.appendChild(gameListContainer);
+    const createGameButton = document.createElement("div");
+    createGameButton.id = "createGameButton";
+    createGameButton.innerHTML = "+";
+    createGameButton.style.right = import.meta.env.VITE_CANVAS_WIDTH + "px";
+    document.body.appendChild(createGameButton);
+    createGameButton.onclick = () => {};
+
+    const getList = async () => {
+      const response = await fetch(
+        "http://localhost:3000/api/lobby/getLobbys",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      data.map((item: any) => {
+        const lobby = document.createElement("div");
+        lobby.id = "lobby";
+        const lobbyName = document.createElement("span");
+        const joinButton = document.createElement("div");
+        lobbyName.id = "lobbyName";
+        lobbyName.innerHTML = item.lobbytitle as string;
+        joinButton.id = "joinButton";
+        joinButton.innerHTML = "join";
+        joinButton.addEventListener("click", () => {
+          game.transition.forwardAnimation({ stateTo: "lobby" });
+          setTimeout(() => {
+            gameListContainer.childNodes.forEach(
+              (child: any) => (child.style.visibility = "hidden")
+            );
+          }, 2005);
+        });
+        lobby.appendChild(lobbyName);
+        lobby.appendChild(joinButton);
+        gameListContainer.appendChild(lobby);
+        return;
+      });
+    };
+    getList();
   }
 
   drawALobby() {

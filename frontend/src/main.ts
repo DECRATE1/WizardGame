@@ -51,11 +51,12 @@ inputContainer?.appendChild(usernameInput);
 inputContainer?.appendChild(passwordInput);
 
 async function getUser(username: string) {
+  console.log(username);
   const accessToken = localStorage.getItem("accessToken");
   const refreshToken = localStorage.getItem("refreshToken");
 
   const isValid = await fetch(
-    `http://localhost:3000/api/user/getByUsername/?username=${username}`,
+    `http://localhost:3000/api/user/getByUsername/${username}`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -63,8 +64,11 @@ async function getUser(username: string) {
       method: "GET",
     }
   );
+  const lobbyCreateMenu = document.getElementById("lobbyCreateMenu");
+  lobbyCreateMenu!.style.left = import.meta.env.VITE_CANVAS_WIDTH * 2.1 + "px";
 
   if (!isValid.ok) {
+    console.log(username);
     const tokens = await fetch("http://localhost:3000/api/auth/refresh", {
       headers: {
         Authorization: `Bearer ${refreshToken}`,
@@ -81,6 +85,8 @@ async function getUser(username: string) {
     localStorage.setItem("accessToken", tokens.refresToken);
   }
 }
+
+getUser(localStorage.getItem("username") as string);
 
 const loginDiv = document.getElementById("loginDiv");
 const submitButton = document.getElementById("submitButton");
@@ -214,7 +220,7 @@ gameButton.style.top = import.meta.env.VITE_CANVAS_HEIGHT + "px";
 gameButton.style.position = "absolute";
 gameButton.addEventListener("click", () => {
   game.transition.forwardAnimation({ stateTo: "lobbyList" });
-  gameButton.style.visibility = "hidden";
+  gameButton.style.display = "none";
 });
 
 document.body.appendChild(gameButton);
