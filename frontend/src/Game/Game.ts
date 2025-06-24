@@ -248,8 +248,48 @@ export class Game {
     createGameButton.id = "createGameButton";
     createGameButton.innerHTML = "+";
     createGameButton.style.right = import.meta.env.VITE_CANVAS_WIDTH + "px";
+    createGameButton!.onclick = () => {
+      lobbyCreateMenu!.style.display === "flex"
+        ? (lobbyCreateMenu!.style.display = "none")
+        : (lobbyCreateMenu!.style.display = "flex");
+    };
+
     document.body.appendChild(createGameButton);
-    createGameButton.onclick = () => {};
+
+    const lobbyCreateMenu = document.getElementById("lobbyCreateMenu");
+    lobbyCreateMenu!.style.left =
+      import.meta.env.VITE_CANVAS_WIDTH * 2.1 + "px";
+    const lobbyNameInput: HTMLInputElement = document.getElementById(
+      "lobbyNameInput"
+    ) as HTMLInputElement;
+    lobbyCreateMenu!.style.zIndex = "20";
+    lobbyNameInput!.onchange = (e) => {
+      lobbyNameInput.value = (e.target as HTMLInputElement).value;
+    };
+    const lobbyCreateMenuBtn = document.getElementById("lobbyCreateMenuBtn");
+
+    lobbyCreateMenuBtn!.onclick = async () => {
+      const response = await fetch("http://localhost:3000/api/lobby/create", {
+        method: "POST",
+        body: JSON.stringify({
+          title: lobbyNameInput.value,
+        }),
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.ok) {
+        lobbyNameInput.value = "";
+        lobbyCreateMenu!.style.display = "none";
+        gameListContainer.style.display = "none";
+        game.transition.forwardAnimation({ stateTo: "lobby" });
+        return;
+      }
+      lobbyNameInput.value = "";
+      lobbyCreateMenu!.style.display = "none";
+      return;
+    };
 
     const getList = async () => {
       const response = await fetch(

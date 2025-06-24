@@ -64,9 +64,6 @@ async function getUser(username: string) {
       method: "GET",
     }
   );
-  const lobbyCreateMenu = document.getElementById("lobbyCreateMenu");
-  lobbyCreateMenu!.style.left = import.meta.env.VITE_CANVAS_WIDTH * 2.1 + "px";
-
   if (!isValid.ok) {
     console.log(username);
     const tokens = await fetch("http://localhost:3000/api/auth/refresh", {
@@ -220,7 +217,7 @@ gameButton.style.top = import.meta.env.VITE_CANVAS_HEIGHT + "px";
 gameButton.style.position = "absolute";
 gameButton.addEventListener("click", () => {
   game.transition.forwardAnimation({ stateTo: "lobbyList" });
-  gameButton.style.display = "none";
+  gameButton.style.visibility = "hidden";
 });
 
 document.body.appendChild(gameButton);
