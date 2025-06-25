@@ -1,6 +1,6 @@
 import { Enemy } from "../Enemy/Enemy";
 import { game } from "../main";
-
+import { io, Socket } from "socket.io-client";
 import { Player } from "../Player/Player";
 import { spellManager } from "../Spell/SpellManager";
 import { Sprite } from "../Sprite/Sprite";
@@ -14,6 +14,7 @@ export class Game {
   player: Player;
   enemy: Enemy;
   transition = new Transition();
+  connectedToSocket = false;
   constructor({
     canvas,
     ctx,
@@ -314,9 +315,7 @@ export class Game {
         joinButton.addEventListener("click", () => {
           game.transition.forwardAnimation({ stateTo: "lobby" });
           setTimeout(() => {
-            gameListContainer.childNodes.forEach(
-              (child: any) => (child.style.visibility = "hidden")
-            );
+            gameListContainer.style.display = "none";
           }, 2005);
         });
         lobby.appendChild(lobbyName);
@@ -329,20 +328,34 @@ export class Game {
   }
 
   drawALobby() {
-    this.player.position = {
-      x: this.player.position.x,
-      y: Math.floor(import.meta.env.VITE_CANVAS_HEIGHT / 2.5),
-    };
+    if (!this.connectedToSocket) {
+      this.connectedToSocket = true;
+      const socket = io("ws://localhost:8080/lobby");
 
-    this.player.draw();
-    if (document.getElementById("playButton") !== null) return;
-    const playButton = document.createElement("div");
-    playButton.id = "playButton";
-    playButton.innerHTML = "START";
-    playButton.addEventListener("click", () => {
-      game.transition.forwardAnimation({ stateTo: "game" });
-      playButton.style.visibility = "hidden";
-    });
-    document.body.appendChild(playButton);
+      socket.on("connect", () => {
+        console.log("Connected to WebSocket server");
+        socket.on("message", (message) => {
+          for (let i = 1; i <= message; i++) {
+            console.log(i, 140 + (message - 1) * 50);
+            this.player.position = {
+              x: 140 + (i - 1) * 50,
+              y: Math.floor(import.meta.env.VITE_CANVAS_HEIGHT / 2.5),
+            };
+            this.player.draw();
+          }
+        });
+      });
+
+      if (document.getElementById("playButton") !== null) return;
+      const playButton = document.createElement("div");
+      playButton.id = "playButton";
+      playButton.innerHTML = "START";
+      playButton.addEventListener("click", () => {
+        game.transition.forwardAnimation({ stateTo: "game" });
+        playButton.style.visibility = "hidden";
+      });
+      document.body.appendChild(playButton);
+    }
+    return;
   }
 }

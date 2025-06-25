@@ -33,8 +33,6 @@ export class Enemy extends Player {
         this.image.height
       );
     }
-    this.createHitbox();
-    this.drawHpBar();
   }
 
   drawHpBar(): void {
