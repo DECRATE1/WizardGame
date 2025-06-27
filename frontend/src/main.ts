@@ -103,11 +103,23 @@ const submitFunction = async () => {
   });
   if (body.ok) {
     localStorage.setItem("username", usernameInput.value);
+
     const data = await body.json();
 
     localStorage.setItem("accessToken", data.accessToken);
     localStorage.setItem("refreshToken", data.refreshToken);
 
+    const response = await fetch(
+      `http://localhost:3000/api/user/getByUsername/${usernameInput.value}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    );
+    const user = await response.json();
+    localStorage.setItem("id", user.id);
     return;
   }
 

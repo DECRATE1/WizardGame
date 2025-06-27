@@ -15,6 +15,7 @@ export class Game {
   enemy: Enemy;
   transition = new Transition();
   connectedToSocket = false;
+  socket: Socket = io();
   constructor({
     canvas,
     ctx,
@@ -241,7 +242,6 @@ export class Game {
     const list = document.getElementById("gameListContainer");
 
     if (list) return;
-
     const gameListContainer = document.createElement("div");
     gameListContainer.id = "gameListContainer";
     document.body.appendChild(gameListContainer);
@@ -303,7 +303,7 @@ export class Game {
         }
       );
       const data = await response.json();
-      data.map((item: any) => {
+      data.map((item: any, index: number) => {
         const lobby = document.createElement("div");
         lobby.id = "lobby";
         const lobbyName = document.createElement("span");
@@ -313,6 +313,7 @@ export class Game {
         joinButton.id = "joinButton";
         joinButton.innerHTML = "join";
         joinButton.addEventListener("click", () => {
+          localStorage.setItem("lobbyid", index.toString());
           game.transition.forwardAnimation({ stateTo: "lobby" });
           setTimeout(() => {
             gameListContainer.style.display = "none";
@@ -330,32 +331,46 @@ export class Game {
   drawALobby() {
     if (!this.connectedToSocket) {
       this.connectedToSocket = true;
-      const socket = io("ws://localhost:8080/lobby");
+      const lobbyid = localStorage.getItem("lobbyid");
+      this.socket = io(`ws://localhost:8080/lobby?id=${lobbyid}`);
 
-      socket.on("connect", () => {
-        console.log("Connected to WebSocket server");
-        socket.on("message", (message) => {
-          for (let i = 1; i <= message; i++) {
-            console.log(i, 140 + (message - 1) * 50);
-            this.player.position = {
-              x: 140 + (i - 1) * 50,
-              y: Math.floor(import.meta.env.VITE_CANVAS_HEIGHT / 2.5),
-            };
-            this.player.draw();
-          }
+      this.socket.on("connect", () => {
+        console.log(`user ${localStorage.getItem("userid")} connected`);
+      });
+
+      this.socket.emit("connectLobby", {
+        userid: localStorage.getItem("id"),
+        lobbyid: localStorage.getItem("lobbyid"),
+      });
+
+      this.socket.on("NumberOfPlayers", (number) => {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        for (let i = 0; i < number; i++) {
+          this.player.position.x = 140 + i * 50;
+          this.player.position.y = import.meta.env.VITE_CANVAS_HEIGHT / 2;
+          this.player.draw();
+        }
+      });
+
+      window.onbeforeunload = () => {
+        this.socket.emit("dis", {
+          userid: localStorage.getItem("id"),
+          lobbyid: localStorage.getItem("lobbyid"),
         });
-      });
 
-      if (document.getElementById("playButton") !== null) return;
-      const playButton = document.createElement("div");
-      playButton.id = "playButton";
-      playButton.innerHTML = "START";
-      playButton.addEventListener("click", () => {
-        game.transition.forwardAnimation({ stateTo: "game" });
-        playButton.style.visibility = "hidden";
-      });
-      document.body.appendChild(playButton);
+        return null;
+      };
     }
+    if (document.getElementById("playButton") !== null) return;
+    const playButton = document.createElement("div");
+    playButton.id = "playButton";
+    playButton.innerHTML = "START";
+    playButton.addEventListener("click", () => {
+      game.transition.forwardAnimation({ stateTo: "game" });
+      playButton.style.visibility = "hidden";
+    });
+    document.body.appendChild(playButton);
+
     return;
   }
 }

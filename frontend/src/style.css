@@ -4,6 +4,7 @@ body {
   margin: 0;
   overflow: hidden;
   image-rendering: pixelated;
+  background: black;
 }
 
 canvas {
