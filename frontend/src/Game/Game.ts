@@ -331,8 +331,8 @@ export class Game {
   drawALobby() {
     if (!this.connectedToSocket) {
       this.connectedToSocket = true;
-      const lobbyid = localStorage.getItem("lobbyid");
-      this.socket = io(`ws://localhost:8080/lobby?id=${lobbyid}`);
+
+      this.socket = io(`ws://localhost:8080/lobby`);
 
       this.socket.on("connect", () => {
         console.log(`user ${localStorage.getItem("userid")} connected`);
@@ -352,6 +352,14 @@ export class Game {
         }
       });
 
+      this.socket.on("message", (message) => {
+        console.log(message);
+      });
+
+      this.socket.on("readyState", (state) => {
+        console.log(state.state);
+      });
+
       window.onbeforeunload = () => {
         this.socket.emit("dis", {
           userid: localStorage.getItem("id"),
@@ -366,8 +374,12 @@ export class Game {
     playButton.id = "playButton";
     playButton.innerHTML = "START";
     playButton.addEventListener("click", () => {
-      game.transition.forwardAnimation({ stateTo: "game" });
-      playButton.style.visibility = "hidden";
+      this.socket.emit("ready", {
+        lobbyid: localStorage.getItem("lobbyid"),
+        userid: localStorage.getItem("id"),
+      });
+      //game.transition.forwardAnimation({ stateTo: "game" });
+      //playButton.style.visibility = "hidden";
     });
     document.body.appendChild(playButton);
 
