@@ -335,7 +335,7 @@ export class Game {
       this.socket = io(`ws://localhost:8080/lobby`);
 
       this.socket.on("connect", () => {
-        console.log(`user ${localStorage.getItem("userid")} connected`);
+        console.log(`user ${localStorage.getItem("id")} connected`);
       });
 
       this.socket.emit("connectLobby", {
@@ -343,12 +343,59 @@ export class Game {
         lobbyid: localStorage.getItem("lobbyid"),
       });
 
-      this.socket.on("NumberOfPlayers", (number) => {
+      this.socket.on("NumberOfPlayers", (data) => {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        for (let i = 0; i < number; i++) {
-          this.player.position.x = 140 + i * 50;
-          this.player.position.y = import.meta.env.VITE_CANVAS_HEIGHT / 2;
+        for (let i = 0; i < data.numberOfConnections; i++) {
+          this.player.position.x = this.canvas.width / 1.5 + i * 50;
+          this.player.position.y = Math.ceil(
+            import.meta.env.VITE_CANVAS_HEIGHT / 2.1
+          );
           this.player.draw();
+          console.log(data);
+          if (!document.getElementById("readyStateDiv" + data.socketids[i])) {
+            const readyStateDiv = document.createElement("div");
+            readyStateDiv.id = "readyStateDiv" + data.socketids[i];
+            readyStateDiv.style.width = 180 + "px";
+            readyStateDiv.style.cssText = `
+              position: absolute;
+              justify-items: center;
+              align-items: center;
+              text-align: center;`;
+            const readyStateText = document.createElement("span");
+            readyStateText.style.cssText = `
+              color: red;
+              font-weight: bolder;
+              font-size: x-large;
+              font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;`;
+            readyStateText.id = "readyStateText" + data.socketids[i];
+            readyStateDiv.appendChild(readyStateText);
+            readyStateText.innerHTML = "NOT READY";
+            readyStateDiv.style.left =
+              this.canvas.width * 2.25 +
+              i * this.player.image.width * 2.2 +
+              "px";
+            readyStateDiv.style.top =
+              import.meta.env.VITE_CANVAS_HEIGHT * 2.6 + "px";
+            document.body.appendChild(readyStateDiv);
+          }
+
+          const dataToRemove = document.getElementById(data.removeElement);
+
+          dataToRemove?.remove();
+
+          this.socket.on("readyState", (state) => {
+            const readyStateText = document.getElementById(
+              "readyStateText" + state.sockeid
+            );
+
+            if (state.state) {
+              readyStateText!.innerHTML = "READY";
+              readyStateText!.style.color = "green";
+              return;
+            }
+            readyStateText!.innerHTML = "NOT READY";
+            readyStateText!.style.color = "red";
+          });
         }
       });
 
@@ -356,14 +403,11 @@ export class Game {
         console.log(message);
       });
 
-      this.socket.on("readyState", (state) => {
-        console.log(state.state);
-      });
-
       window.onbeforeunload = () => {
         this.socket.emit("dis", {
           userid: localStorage.getItem("id"),
           lobbyid: localStorage.getItem("lobbyid"),
+          removeElement: "readyStateDiv" + this.socket.id,
         });
 
         return null;
