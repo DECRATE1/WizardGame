@@ -313,7 +313,7 @@ export class Game {
         joinButton.id = "joinButton";
         joinButton.innerHTML = "join";
         joinButton.addEventListener("click", () => {
-          localStorage.setItem("lobbyid", index.toString());
+          localStorage.setItem("lobbyid", (1 + index).toString());
           game.transition.forwardAnimation({ stateTo: "lobby" });
           setTimeout(() => {
             gameListContainer.style.display = "none";
@@ -344,6 +344,7 @@ export class Game {
       });
 
       this.socket.on("NumberOfPlayers", (data) => {
+        console.log(data);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         for (let i = 0; i < data.numberOfConnections; i++) {
           this.player.position.x = this.canvas.width / 1.5 + i * 50;
@@ -351,37 +352,45 @@ export class Game {
             import.meta.env.VITE_CANVAS_HEIGHT / 2.1
           );
           this.player.draw();
-          console.log(data);
+
           if (!document.getElementById("readyStateDiv" + data.socketids[i])) {
             const readyStateDiv = document.createElement("div");
             readyStateDiv.id = "readyStateDiv" + data.socketids[i];
-            readyStateDiv.style.width = 180 + "px";
+            const readyContainer = document.getElementById("readyContainer");
+
             readyStateDiv.style.cssText = `
+              width: ${180}px;
               position: absolute;
               justify-items: center;
               align-items: center;
               text-align: center;`;
             const readyStateText = document.createElement("span");
             readyStateText.style.cssText = `
-              color: red;
+              color: ${data.players[i].playerisReady ? "green" : "red"};
               font-weight: bolder;
               font-size: x-large;
               font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;`;
             readyStateText.id = "readyStateText" + data.socketids[i];
             readyStateDiv.appendChild(readyStateText);
-            readyStateText.innerHTML = "NOT READY";
+            console.log(data);
+            readyStateText.innerHTML = data.players[i].playerisReady
+              ? "READY"
+              : "NOT READY";
             readyStateDiv.style.left =
-              this.canvas.width * 2.25 +
-              i * this.player.image.width * 2.2 +
-              "px";
+              import.meta.env.VITE_CANVAS_WIDTH * 2.25 + i * 265 + "px";
             readyStateDiv.style.top =
               import.meta.env.VITE_CANVAS_HEIGHT * 2.6 + "px";
-            document.body.appendChild(readyStateDiv);
+
+            readyContainer?.appendChild(readyStateDiv);
           }
-
-          const dataToRemove = document.getElementById(data.removeElement);
-
-          dataToRemove?.remove();
+          if (data.removeElement) {
+            const dataToRemove = document.getElementById(data.removeElement);
+            dataToRemove?.remove();
+            const elementToChange = "readyStateDiv" + data.socketids[0];
+            const readyStateDiv = document.getElementById(elementToChange);
+            readyStateDiv!.style.left =
+              import.meta.env.VITE_CANVAS_WIDTH * 2.25 + 0 * 265 + "px";
+          }
 
           this.socket.on("readyState", (state) => {
             const readyStateText = document.getElementById(
@@ -391,6 +400,9 @@ export class Game {
             if (state.state) {
               readyStateText!.innerHTML = "READY";
               readyStateText!.style.color = "green";
+              this.socket.emit("everyoneIsReady", {
+                lobbyid: localStorage.getItem("lobbyid"),
+              });
               return;
             }
             readyStateText!.innerHTML = "NOT READY";
@@ -399,17 +411,13 @@ export class Game {
         }
       });
 
-      this.socket.on("message", (message) => {
-        console.log(message);
-      });
-
       window.onbeforeunload = () => {
         this.socket.emit("dis", {
           userid: localStorage.getItem("id"),
           lobbyid: localStorage.getItem("lobbyid"),
           removeElement: "readyStateDiv" + this.socket.id,
         });
-
+        localStorage.removeItem("lobbyid");
         return null;
       };
     }
@@ -422,8 +430,19 @@ export class Game {
         lobbyid: localStorage.getItem("lobbyid"),
         userid: localStorage.getItem("id"),
       });
-      //game.transition.forwardAnimation({ stateTo: "game" });
-      //playButton.style.visibility = "hidden";
+
+      this.socket.on("everyoneIsReady", (message) => {
+        const { everyoneIsReady } = message;
+        if (message.numberofPlayers < 2) {
+          return;
+        }
+        if (everyoneIsReady) {
+          game.transition.forwardAnimation({ stateTo: "game" });
+          playButton.style.visibility = "hidden";
+          const readyContainer = document.getElementById("readyContainer");
+          readyContainer?.childNodes.forEach((child) => child.remove());
+        }
+      });
     });
     document.body.appendChild(playButton);
 
