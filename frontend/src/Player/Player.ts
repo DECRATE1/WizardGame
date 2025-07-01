@@ -5,6 +5,7 @@ export class Player extends Sprite {
   currentFrame: number = 0;
   hp = 100;
   prevHealth;
+
   constructor({
     image,
     position,
@@ -14,6 +15,7 @@ export class Player extends Sprite {
     image: string;
     position: { x: number; y: number };
     frames: number;
+
     ctx: CanvasRenderingContext2D;
   }) {
     super({ image, position, ctx });
@@ -29,6 +31,7 @@ export class Player extends Sprite {
         0,
         this.image.width / this.frames,
         this.image.height,
+
         this.position.x - this.image.width,
         this.position.y - this.image.height,
         this.image.width / this.frames,

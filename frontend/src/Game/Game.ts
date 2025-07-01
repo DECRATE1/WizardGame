@@ -12,8 +12,10 @@ export class Game {
   ctx: CanvasRenderingContext2D;
   background: Sprite;
   player: Player;
+  players: Player[];
   enemy: Enemy;
   transition = new Transition();
+  isScaled = false;
   connectedToSocket = false;
   socket: Socket = io();
   constructor({
@@ -30,6 +32,8 @@ export class Game {
       position: { x: 0, y: 0 },
       ctx: this.ctx,
     });
+
+    this.players = [];
 
     this.player = new Player({
       image: "/WizardSprite.png",
@@ -54,28 +58,8 @@ export class Game {
   render() {
     switch (this.state) {
       case "game": {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.player.position = {
-          x: 140,
-          y: Math.round(this.canvas.height / 1.3),
-        };
-        this.background.draw();
-
-        this.player.draw();
-        this.player.createHitbox();
-        this.player.drawHpBar();
-        this.enemy.draw();
+        this.drawAGame();
         this.drawAGameScene();
-
-        spellManager.getQueue().map((spell: any) => {
-          if (spell.isDynamic) {
-            spell.update();
-            return;
-          }
-
-          spell.update();
-          return;
-        });
         break;
       }
       case "lobbyList": {
@@ -140,19 +124,77 @@ export class Game {
     this.rectW -= 1;
   }*/
 
+  drawAGame() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.background.draw();
+
+    /*this.player.position = {
+      x: 140,
+      y: Math.round(this.canvas.height / 1.3),
+    };*/
+
+    this.players.map((player) => {
+      console.log(player.isLoad, player.image);
+      player.draw();
+    });
+
+    spellManager.getQueue().map((spell: any) => {
+      if (spell.isDynamic) {
+        spell.update();
+        return;
+      }
+
+      spell.update();
+      return;
+    });
+  }
+
   drawAGameScene() {
     if (
       document.getElementById("section") &&
       document.getElementById("castLine")
     )
       return;
+
+    this.socket.emit("startAGame", {
+      lobbyid: localStorage.getItem("lobbyid"),
+    });
+
+    this.socket.on("startAGame", (data) => {
+      const { players } = data;
+      players.map((_: any, index: number) => {
+        if (index < 1) {
+          this.players.push(
+            new Player({
+              image: "/WizardSprite.png",
+              position: { x: 140, y: Math.round(this.canvas.height / 1.3) },
+              ctx: this.ctx,
+              frames: 3,
+            })
+          );
+        } else {
+          this.players.push(
+            new Player({
+              image: "/WizardSpriteReversed.png",
+              position: {
+                x: this.canvas.width + 48,
+                y: Math.round(this.canvas.height / 1.3),
+              },
+              ctx: this.ctx,
+              frames: 3,
+            })
+          );
+        }
+      });
+    });
+
     const section = document.createElement("div");
     section.id = "section";
     const board = document.createElement("div");
-    const button = document.createElement("div");
+    const buttonSpell = document.createElement("div");
     const castLine = document.createElement("div");
-    castLine.id = "castLine";
 
+    castLine.id = "castLine";
     castLine.style.width = "523px";
     castLine.style.height = "64px";
     castLine.style.backgroundColor = "blue";
@@ -174,14 +216,19 @@ export class Game {
     section.style.alignItems = "center";
     section.style.marginTop = "20px";
 
-    button.style.backgroundImage = `url('/button.png')`;
-    button.style.textAlign = "center";
-    button.style.color = "white";
-    button.style.width = "128px";
-    button.style.height = "128px";
-    button.style.backgroundSize = "cover";
-    button.style.backgroundRepeat = "no-repeat";
-    button.onclick = () => {
+    buttonSpell.style.backgroundImage = `url('/button.png')`;
+    buttonSpell.style.textAlign = "center";
+    buttonSpell.style.color = "white";
+    buttonSpell.style.width = "128px";
+    buttonSpell.style.height = "128px";
+    buttonSpell.style.backgroundSize = "cover";
+    buttonSpell.style.backgroundRepeat = "no-repeat";
+    buttonSpell.onclick = () => {
+      this.socket.emit("castSpell", {
+        spellid: spellManager.spellCast,
+        lobbyid: localStorage.getItem("lobbyid"),
+      });
+
       spellManager.addToCasting({ id: +spellManager.spellCast });
       spellManager.spellCast = "";
 
@@ -189,6 +236,10 @@ export class Game {
         castLine.removeChild(castLine.lastChild as ChildNode);
       }
     };
+
+    this.socket.on("castSpell", (spellData) => {
+      if (spellData.clientid !== this.socket.id) console.log(spellData.spellid);
+    });
 
     board.id = "#board";
     board.style.width = "400px";
@@ -233,7 +284,7 @@ export class Game {
     }
 
     section.appendChild(board);
-    section.appendChild(button);
+    section.appendChild(buttonSpell);
     document.body.appendChild(section);
     document.body.appendChild(castLine);
   }
@@ -344,7 +395,6 @@ export class Game {
       });
 
       this.socket.on("NumberOfPlayers", (data) => {
-        console.log(data);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         for (let i = 0; i < data.numberOfConnections; i++) {
           this.player.position.x = this.canvas.width / 1.5 + i * 50;
@@ -372,24 +422,20 @@ export class Game {
               font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;`;
             readyStateText.id = "readyStateText" + data.socketids[i];
             readyStateDiv.appendChild(readyStateText);
-            console.log(data);
             readyStateText.innerHTML = data.players[i].playerisReady
               ? "READY"
               : "NOT READY";
-            readyStateDiv.style.left =
-              import.meta.env.VITE_CANVAS_WIDTH * 2.25 + i * 265 + "px";
-            readyStateDiv.style.top =
-              import.meta.env.VITE_CANVAS_HEIGHT * 2.6 + "px";
+            readyStateDiv.style.left = 66.1 + i * 16.3 + "rem";
+            readyStateDiv.style.top = this.canvas.height * 2.5 + "px";
 
             readyContainer?.appendChild(readyStateDiv);
           }
-          if (data.removeElement) {
+          if (data.removeElement !== null) {
             const dataToRemove = document.getElementById(data.removeElement);
             dataToRemove?.remove();
             const elementToChange = "readyStateDiv" + data.socketids[0];
             const readyStateDiv = document.getElementById(elementToChange);
-            readyStateDiv!.style.left =
-              import.meta.env.VITE_CANVAS_WIDTH * 2.25 + 0 * 265 + "px";
+            readyStateDiv!.style.left = 66.1 + 0 * 16.3 + "rem";
           }
 
           this.socket.on("readyState", (state) => {
@@ -433,9 +479,9 @@ export class Game {
 
       this.socket.on("everyoneIsReady", (message) => {
         const { everyoneIsReady } = message;
-        if (message.numberofPlayers < 2) {
+        /*if (message.numberofPlayers ) {
           return;
-        }
+        }*/
         if (everyoneIsReady) {
           game.transition.forwardAnimation({ stateTo: "game" });
           playButton.style.visibility = "hidden";
