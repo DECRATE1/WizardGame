@@ -1,5 +1,5 @@
 export interface SpellDto {
-  owner: number;
+  owner: string;
   image: string;
   position: { x: number; y: number };
   ctx: CanvasRenderingContext2D;
@@ -11,4 +11,8 @@ export interface SpellDto {
 export interface FireballDto extends SpellDto {
   dmg: number;
   velocity: number;
+}
+
+export interface ShieldDto extends SpellDto {
+  hp: number;
 }

@@ -2,67 +2,35 @@ import { Spell } from "./Spell";
 import type { FireballDto } from "./SpellsDto";
 
 export class Fireball extends Spell {
-  static id: string = "111";
-  dmg: number;
-  velocity: number;
-  constructor({
-    image,
-    position,
-    ctx,
-    frames,
-    currentFrame,
-    side,
-    dmg,
-    velocity,
-    owner,
-  }: FireballDto) {
-    super({ image, position, ctx, frames, currentFrame, side, owner });
-    this.dmg = dmg;
-    this.velocity = velocity;
-  }
-
-  static create({
-    image,
-    position,
-    ctx,
-    frames,
-    currentFrame,
-    side,
-    dmg,
-    velocity,
-    owner,
-  }: FireballDto) {
-    return new this({
-      image,
-      position,
+  static id = 111;
+  static dmg: number = 10;
+  static velocity: number = 1;
+  static image = "/fireball (3).png";
+  constructor({ ctx, side, owner }: FireballDto) {
+    super({
+      image: Fireball.image,
+      position:
+        side === "left"
+          ? {
+              x: 100,
+              y: Math.round(import.meta.env.VITE_CANVAS_HEIGHT / 1.32),
+            }
+          : { x: 0, y: 0 },
       ctx,
-      frames,
-      currentFrame,
+      frames: 1,
+      currentFrame: 0,
       side,
-      dmg,
-      velocity,
       owner,
     });
   }
 
   update(): void {
     this.draw();
-
-    if (this.isColiding()) {
-      this.useAbility();
-      return;
-    }
-    this.side === "left"
-      ? (this.position.x += this.velocity!)
-      : (this.position.x -= this.velocity!);
-    return;
+    this.useAbility();
+    this.position.x += Fireball.velocity!;
   }
 
   useAbility() {
     console.log(1);
-  }
-
-  static getSpellId() {
-    return this.id;
   }
 }

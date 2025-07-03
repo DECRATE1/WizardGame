@@ -223,22 +223,12 @@ export class Game {
     buttonSpell.style.backgroundSize = "cover";
     buttonSpell.style.backgroundRepeat = "no-repeat";
     buttonSpell.onclick = async () => {
-      this.socket.emit("castSpell", {
-        spellid: spellManager.spellCast,
-        lobbyid: localStorage.getItem("lobbyid"),
-      });
-
-      const response = await fetch(
-        `http://localhost:3000/api/lobby/getSide/${localStorage.getItem("id")}`,
-        {
-          method: "GET",
-        }
-      );
-      const data = await response.json();
-
       while (castLine.firstChild) {
         castLine.removeChild(castLine.lastChild as ChildNode);
       }
+      const id = spellManager.spellCast;
+      spellManager.spellCast = "";
+      spellManager.addToQueue(id, "left");
     };
 
     board.id = "#board";

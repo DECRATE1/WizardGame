@@ -159,19 +159,13 @@ import { spellManager } from "./SpellManager";
 }*/
 
 export class Spell extends Sprite {
-  owner: number;
+  static id = 0;
+  static image = "sex";
+  owner: string;
   frames: number;
-  currentFrame: number = 0;
   side: "left" | "right";
-  constructor({ image, position, ctx, frames, side, owner }: SpellDto) {
-    super({ image, position, ctx });
-
-    this.frames = frames;
-    this.side = side;
-    this.owner = owner;
-  }
-
-  static create({
+  currentFrame: number;
+  constructor({
     image,
     position,
     ctx,
@@ -180,24 +174,28 @@ export class Spell extends Sprite {
     owner,
     currentFrame,
   }: SpellDto) {
-    return new this({
-      image,
-      position,
-      ctx,
-      frames,
-      side,
-      owner,
-      currentFrame,
-    });
+    super({ image, position, ctx });
+    this.frames = frames;
+    this.side = side;
+    this.owner = owner;
+    this.currentFrame = currentFrame;
   }
 
   draw(): void {
-    if (this.isLoad) {
-      this.ctx.drawImage(this.image, this.position.x, this.position.y);
-    }
+    this.ctx.drawImage(
+      this.image,
+      (this.image.width / this.frames) * this.currentFrame,
+      0,
+      this.image.width / this.frames,
+      this.image.height,
+      this.position.x - this.image.width,
+      this.position.y - this.image.height,
+      this.image.width / this.frames,
+      this.image.height
+    );
   }
 
-  isColiding() {
+  /*isColiding() {
     if (
       this.side === "left" &&
       this.position.x >=
@@ -214,7 +212,7 @@ export class Spell extends Sprite {
       return true;
     }
     return false;
-  }
+  }*/
 
   update() {
     this.draw();
@@ -225,4 +223,8 @@ export class Spell extends Sprite {
   }
 
   onCollision() {}
+
+  static getSpellId() {
+    return this.id.toString();
+  }
 }

@@ -180,18 +180,6 @@ window.onbeforeunload = () => {
 document.body.appendChild(gameButton);
 canvas.style.backgroundColor = "black";
 
-const fireball = Fireball.create({
-  image: "1",
-  position: { x: 1, y: 1 },
-  ctx: game.ctx,
-  side: "left",
-  dmg: 10,
-  velocity: 1,
-  owner: 1,
-  frames: 1,
-  currentFrame: 1,
-});
-
 function render() {
   isLogin();
   game.render();
