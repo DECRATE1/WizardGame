@@ -1,8 +1,6 @@
 import { Game } from "./Game/Game";
 import { Fireball } from "./Spell/Fireball";
-import { Spell } from "./Spell/Spell";
 
-import { spellManager } from "./Spell/SpellManager";
 import "./style.css";
 
 export const canvas = document.querySelector("#game") as HTMLCanvasElement;

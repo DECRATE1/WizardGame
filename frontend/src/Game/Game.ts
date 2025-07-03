@@ -139,14 +139,8 @@ export class Game {
       player.createHitbox();
     });
 
-    spellManager.getQueue().map((spell: any) => {
-      if (spell.isDynamic) {
-        spell.update();
-        return;
-      }
-
+    spellManager.getSpellQueue().map((spell: any) => {
       spell.update();
-      return;
     });
   }
 
@@ -241,39 +235,11 @@ export class Game {
         }
       );
       const data = await response.json();
-      const { sessionSide } = data;
-      const randomKey = new Date().getMilliseconds();
-      if (sessionSide === "left") {
-        const spellid = +spellManager.spellCast;
-        const spell = spellManager.getSpell({ id: spellid });
-        spell.position.x = this.players[0].position.x - 32;
-        spellManager.addToCasting({
-          id: +spellManager.spellCast,
-          sessionid: randomKey.toString(),
-        });
-        spellManager.spellCast = "";
-      } else {
-        const spellid = +spellManager.spellCast;
-        const spell = spellManager.getSpell({ id: spellid });
-        spell.side = "right";
-        spell.position.x = this.canvas.width - 48;
-        spellManager.addToCasting({
-          id: +spellManager.spellCast,
-          sessionid: randomKey.toString(),
-        });
-        spellManager.spellCast = "";
-      }
 
       while (castLine.firstChild) {
         castLine.removeChild(castLine.lastChild as ChildNode);
       }
     };
-
-    this.socket.on("castSpell", (spellData) => {
-      const spellid = +spellData.spellid;
-      const spell = spellManager.getSpell({ id: spellid });
-      console.log(spell);
-    });
 
     board.id = "#board";
     board.style.width = "400px";

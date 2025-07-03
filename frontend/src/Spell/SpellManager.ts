@@ -1,23 +1,31 @@
 import { Fireball } from "./Fireball";
-import { Spell } from "./Spell";
 
 export class SpellManager {
   private SpellMap = new Map();
   private SpellQueue = new Map();
+  public spellCast: string = "";
 
   addToSpellMap = (id: string, spell: any) => {
     this.SpellMap.set(id, spell);
   };
 
-  addToQueue = (id: string, spell: any) => {
-    this.SpellQueue.set(id, spell);
+  addToQueue = (id: string, spellTemple: Fireball) => {
+    this.SpellQueue.set(id, spellTemple);
   };
 
   removeFromQueue = (id: string) => {
     this.SpellQueue.delete(id);
   };
+
+  getSpellMap() {
+    return this.SpellMap;
+  }
+
+  getSpellQueue = () => {
+    return Array.from(Object.values(this.SpellQueue));
+  };
 }
 
 export const spellManager = new SpellManager();
 
-spellManager.addToSpellMap("111", Fireball);
+spellManager.addToSpellMap(Fireball.getSpellId(), Fireball);

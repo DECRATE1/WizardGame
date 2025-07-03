@@ -1,9 +1,8 @@
-import { game } from "../main";
 import { Spell } from "./Spell";
 import type { FireballDto } from "./SpellsDto";
 
 export class Fireball extends Spell {
-  id: string = "111";
+  static id: string = "111";
   dmg: number;
   velocity: number;
   constructor({
@@ -61,5 +60,9 @@ export class Fireball extends Spell {
 
   useAbility() {
     console.log(1);
+  }
+
+  static getSpellId() {
+    return this.id;
   }
 }
