@@ -1,9 +1,11 @@
 import { game } from "../main";
 import { Sprite } from "../Sprite/Sprite";
+import type { SpellDto } from "./SpellsDto";
 import { spellManager } from "./SpellManager";
 
-export class Spell extends Sprite {
+/*export class Spell extends Sprite {
   id: number;
+  sessionid?: string;
   frames: number;
   isDynamic: boolean;
   currentFrame: number = 0;
@@ -20,6 +22,7 @@ export class Spell extends Sprite {
     dmg?: number;
     velocity?: number;
   };
+  side = "left";
   constructor({
     id,
     isDynamic,
@@ -89,7 +92,9 @@ export class Spell extends Sprite {
         this.onCollision();
         return;
       }
-      this.position.x += this.velocity!;
+      this.side === "left"
+        ? (this.position.x += this.velocity!)
+        : (this.position.x -= this.velocity!);
       return;
     } else {
       if (this.timer <= this.time!) {
@@ -100,7 +105,10 @@ export class Spell extends Sprite {
 
       this.abilityIsUsed = false;
       this.setTimerToDefault();
-      spellManager.removeFromQueue({ id: this.id });
+      spellManager.removeFromQueue({
+        id: this.id,
+        sessionid: this.sessionid as string,
+      });
       return;
     }
   }
@@ -111,10 +119,21 @@ export class Spell extends Sprite {
 
   isColiding() {
     if (
-      (this.position.x >= game.enemy.position.x - 32 &&
-        this.position.x <= game.enemy.position.x) ||
-      this.position.x >= import.meta.env.VITE_CANVAS_WIDTH
+      this.side === "left" &&
+      this.position.x >=
+        game.players[1].position.x - game.players[1].image.width + 16 &&
+      this.position.x <= game.players[1].position.x
     ) {
+      console.log(this.position.x, game.players[1].position.x);
+
+      return true;
+    } else if (
+      this.side === "right" &&
+      this.position.x >=
+        game.players[0].position.x - game.players[0].image.width &&
+      this.position.x <= game.players[0].position.x - 52
+    ) {
+      console.log(1);
       return true;
     }
     return false;
@@ -124,7 +143,10 @@ export class Spell extends Sprite {
     this.useAbility();
     game.enemy.takeADamage();
     this.position.x = this.defaultParams.pos.x;
-    spellManager.removeFromQueue({ id: this.id });
+    spellManager.removeFromQueue({
+      id: this.id,
+      sessionid: this.sessionid as string,
+    });
     return;
   }
 
@@ -134,4 +156,73 @@ export class Spell extends Sprite {
       this.abilityIsUsed = true;
     }
   }
+}*/
+
+export class Spell extends Sprite {
+  owner: number;
+  frames: number;
+  currentFrame: number = 0;
+  side: "left" | "right";
+  constructor({ image, position, ctx, frames, side, owner }: SpellDto) {
+    super({ image, position, ctx });
+
+    this.frames = frames;
+    this.side = side;
+    this.owner = owner;
+  }
+
+  static create({
+    image,
+    position,
+    ctx,
+    frames,
+    side,
+    owner,
+    currentFrame,
+  }: SpellDto) {
+    return new this({
+      image,
+      position,
+      ctx,
+      frames,
+      side,
+      owner,
+      currentFrame,
+    });
+  }
+
+  draw(): void {
+    if (this.isLoad) {
+      this.ctx.drawImage(this.image, this.position.x, this.position.y);
+    }
+  }
+
+  isColiding() {
+    if (
+      this.side === "left" &&
+      this.position.x >=
+        game.players[1].position.x - game.players[1].image.width + 16 &&
+      this.position.x <= game.players[1].position.x
+    ) {
+      return true;
+    } else if (
+      this.side === "right" &&
+      this.position.x >=
+        game.players[0].position.x - game.players[0].image.width &&
+      this.position.x <= game.players[0].position.x - 52
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  update() {
+    this.draw();
+  }
+
+  useAbility() {
+    console.log("Ability is used");
+  }
+
+  onCollision() {}
 }

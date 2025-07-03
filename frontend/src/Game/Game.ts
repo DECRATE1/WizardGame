@@ -134,8 +134,9 @@ export class Game {
     };*/
 
     this.players.map((player) => {
-      console.log(player.isLoad, player.image);
       player.draw();
+      player.drawHpBar();
+      player.createHitbox();
     });
 
     spellManager.getQueue().map((spell: any) => {
@@ -161,29 +162,33 @@ export class Game {
     });
 
     this.socket.on("startAGame", (data) => {
-      const { players } = data;
+      const { players, sockeid } = data;
       players.map((_: any, index: number) => {
-        if (index < 1) {
-          this.players.push(
-            new Player({
-              image: "/WizardSprite.png",
-              position: { x: 140, y: Math.round(this.canvas.height / 1.3) },
-              ctx: this.ctx,
-              frames: 3,
-            })
-          );
-        } else {
-          this.players.push(
-            new Player({
-              image: "/WizardSpriteReversed.png",
-              position: {
-                x: this.canvas.width + 48,
-                y: Math.round(this.canvas.height / 1.3),
-              },
-              ctx: this.ctx,
-              frames: 3,
-            })
-          );
+        if (this.players.length < 2) {
+          if (index < 1) {
+            sessionStorage.setItem("side", "left");
+            this.players.push(
+              new Player({
+                image: "/WizardSprite.png",
+                position: { x: 140, y: Math.round(this.canvas.height / 1.3) },
+                ctx: this.ctx,
+                frames: 3,
+              })
+            );
+          } else {
+            sessionStorage.setItem("side", "right");
+            this.players.push(
+              new Player({
+                image: "/WizardSprite_Reversed.png",
+                position: {
+                  x: this.canvas.width + 48,
+                  y: Math.round(this.canvas.height / 1.3),
+                },
+                ctx: this.ctx,
+                frames: 3,
+              })
+            );
+          }
         }
       });
     });
@@ -223,14 +228,41 @@ export class Game {
     buttonSpell.style.height = "128px";
     buttonSpell.style.backgroundSize = "cover";
     buttonSpell.style.backgroundRepeat = "no-repeat";
-    buttonSpell.onclick = () => {
+    buttonSpell.onclick = async () => {
       this.socket.emit("castSpell", {
         spellid: spellManager.spellCast,
         lobbyid: localStorage.getItem("lobbyid"),
       });
 
-      spellManager.addToCasting({ id: +spellManager.spellCast });
-      spellManager.spellCast = "";
+      const response = await fetch(
+        `http://localhost:3000/api/lobby/getSide/${localStorage.getItem("id")}`,
+        {
+          method: "GET",
+        }
+      );
+      const data = await response.json();
+      const { sessionSide } = data;
+      const randomKey = new Date().getMilliseconds();
+      if (sessionSide === "left") {
+        const spellid = +spellManager.spellCast;
+        const spell = spellManager.getSpell({ id: spellid });
+        spell.position.x = this.players[0].position.x - 32;
+        spellManager.addToCasting({
+          id: +spellManager.spellCast,
+          sessionid: randomKey.toString(),
+        });
+        spellManager.spellCast = "";
+      } else {
+        const spellid = +spellManager.spellCast;
+        const spell = spellManager.getSpell({ id: spellid });
+        spell.side = "right";
+        spell.position.x = this.canvas.width - 48;
+        spellManager.addToCasting({
+          id: +spellManager.spellCast,
+          sessionid: randomKey.toString(),
+        });
+        spellManager.spellCast = "";
+      }
 
       while (castLine.firstChild) {
         castLine.removeChild(castLine.lastChild as ChildNode);
@@ -238,7 +270,9 @@ export class Game {
     };
 
     this.socket.on("castSpell", (spellData) => {
-      if (spellData.clientid !== this.socket.id) console.log(spellData.spellid);
+      const spellid = +spellData.spellid;
+      const spell = spellManager.getSpell({ id: spellid });
+      console.log(spell);
     });
 
     board.id = "#board";
@@ -340,6 +374,7 @@ export class Game {
       }
       lobbyNameInput.value = "";
       lobbyCreateMenu!.style.display = "none";
+
       return;
     };
 
@@ -368,6 +403,7 @@ export class Game {
           game.transition.forwardAnimation({ stateTo: "lobby" });
           setTimeout(() => {
             gameListContainer.style.display = "none";
+            createGameButton.style.display = "none";
           }, 2005);
         });
         lobby.appendChild(lobbyName);
@@ -396,6 +432,7 @@ export class Game {
 
       this.socket.on("NumberOfPlayers", (data) => {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
         for (let i = 0; i < data.numberOfConnections; i++) {
           this.player.position.x = this.canvas.width / 1.5 + i * 50;
           this.player.position.y = Math.ceil(
@@ -464,6 +501,7 @@ export class Game {
           removeElement: "readyStateDiv" + this.socket.id,
         });
         localStorage.removeItem("lobbyid");
+        sessionStorage.clear();
         return null;
       };
     }

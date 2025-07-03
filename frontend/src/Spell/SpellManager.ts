@@ -1,41 +1,23 @@
-import { game } from "../main";
+import { Fireball } from "./Fireball";
 import { Spell } from "./Spell";
 
 export class SpellManager {
-  private spellMap = new Map();
-  spellCast: string = "";
-  spellQueue = new Map();
+  private SpellMap = new Map();
+  private SpellQueue = new Map();
 
-  getMap = () => {
-    return this.spellMap;
+  addToSpellMap = (id: string, spell: any) => {
+    this.SpellMap.set(id, spell);
   };
 
-  addSpellToMap = ({ id, value }: { id: number; value: Spell }) => {
-    this.spellMap.set(id, value);
+  addToQueue = (id: string, spell: any) => {
+    this.SpellQueue.set(id, spell);
   };
 
-  removeSpellFromMap = ({ id }: { id: number }) => {
-    this.spellMap.delete(id);
-    return this.spellMap;
-  };
-
-  getSpell = ({ id }: { id: number }): Spell => {
-    return this.spellMap.get(id);
-  };
-
-  addToCasting = ({ id }: { id: number }) => {
-    const spell: Spell = this.getSpell({ id });
-    if (spell) this.spellQueue.set(id, spell);
-  };
-
-  removeFromQueue = ({ id }: { id: number }) => {
-    if (!this.spellQueue.has(id)) return;
-    this.spellQueue.delete(id);
-  };
-
-  getQueue = () => {
-    return Array.from(this.spellQueue.values());
+  removeFromQueue = (id: string) => {
+    this.SpellQueue.delete(id);
   };
 }
 
 export const spellManager = new SpellManager();
+
+spellManager.addToSpellMap("111", Fireball);
