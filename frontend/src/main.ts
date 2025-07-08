@@ -180,9 +180,18 @@ window.onbeforeunload = () => {
 document.body.appendChild(gameButton);
 canvas.style.backgroundColor = "black";
 
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    return;
+  } else {
+    render();
+  }
+});
+
 function render() {
   isLogin();
   game.render();
-  window.requestAnimationFrame(render);
+  const frameid = window.requestAnimationFrame(render);
+  return () => cancelAnimationFrame(frameid);
 }
 render();

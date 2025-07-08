@@ -162,6 +162,7 @@ export class Spell extends Sprite {
   static id = 0;
   static image = "sex";
   owner: string;
+  sessionid: string;
   frames: number;
   side: "left" | "right";
   currentFrame: number;
@@ -173,12 +174,14 @@ export class Spell extends Sprite {
     side,
     owner,
     currentFrame,
+    sessionid,
   }: SpellDto) {
     super({ image, position, ctx });
     this.frames = frames;
     this.side = side;
     this.owner = owner;
     this.currentFrame = currentFrame;
+    this.sessionid = sessionid;
   }
 
   draw(): void {
@@ -195,7 +198,7 @@ export class Spell extends Sprite {
     );
   }
 
-  /*isColiding() {
+  isColiding() {
     if (
       this.side === "left" &&
       this.position.x >=
@@ -212,7 +215,7 @@ export class Spell extends Sprite {
       return true;
     }
     return false;
-  }*/
+  }
 
   update() {
     this.draw();
@@ -222,7 +225,10 @@ export class Spell extends Sprite {
     console.log("Ability is used");
   }
 
-  onCollision() {}
+  onCollision(): void {
+    this.useAbility();
+    spellManager.removeFromQueue(this.sessionid);
+  }
 
   static getSpellId() {
     return this.id.toString();

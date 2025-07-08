@@ -11,9 +11,7 @@ export class Game {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   background: Sprite;
-  player: Player;
   players: Player[];
-  enemy: Enemy;
   transition = new Transition();
   isScaled = false;
   connectedToSocket = false;
@@ -34,23 +32,6 @@ export class Game {
     });
 
     this.players = [];
-
-    this.player = new Player({
-      image: "/WizardSprite.png",
-      position: { x: 140, y: Math.round(this.canvas.height / 1.3) },
-      ctx: this.ctx,
-      frames: 3,
-    });
-
-    this.enemy = new Enemy({
-      image: "/Dummy.png",
-      position: {
-        x: this.canvas.width,
-        y: Math.round(this.canvas.height / 1.3),
-      },
-      ctx: this.ctx,
-      frames: 2,
-    });
 
     this.render();
   }
@@ -133,7 +114,7 @@ export class Game {
       y: Math.round(this.canvas.height / 1.3),
     };*/
 
-    this.players.map((player) => {
+    this.players.forEach((player) => {
       player.draw();
       player.drawHpBar();
       player.createHitbox();
@@ -150,42 +131,6 @@ export class Game {
       document.getElementById("castLine")
     )
       return;
-
-    this.socket.emit("startAGame", {
-      lobbyid: localStorage.getItem("lobbyid"),
-    });
-
-    this.socket.on("startAGame", (data) => {
-      const { players, sockeid } = data;
-      players.map((_: any, index: number) => {
-        if (this.players.length < 2) {
-          if (index < 1) {
-            sessionStorage.setItem("side", "left");
-            this.players.push(
-              new Player({
-                image: "/WizardSprite.png",
-                position: { x: 140, y: Math.round(this.canvas.height / 1.3) },
-                ctx: this.ctx,
-                frames: 3,
-              })
-            );
-          } else {
-            sessionStorage.setItem("side", "right");
-            this.players.push(
-              new Player({
-                image: "/WizardSprite_Reversed.png",
-                position: {
-                  x: this.canvas.width + 48,
-                  y: Math.round(this.canvas.height / 1.3),
-                },
-                ctx: this.ctx,
-                frames: 3,
-              })
-            );
-          }
-        }
-      });
-    });
 
     const section = document.createElement("div");
     section.id = "section";
@@ -228,7 +173,22 @@ export class Game {
       }
       const id = spellManager.spellCast;
       spellManager.spellCast = "";
-      spellManager.addToQueue(id, "left");
+      const userid = localStorage.getItem("id");
+      const response = await fetch(
+        `http://localhost:3000/api/lobby/getSide/${userid}`,
+        {
+          method: "GET",
+        }
+      );
+      const side = await response.json().then((res) => res.sessionSide);
+
+      this.socket.emit("castSpell", {
+        lobbyid: localStorage.getItem("lobbyid"),
+        side,
+        spellid: id,
+      });
+
+      spellManager.addToQueue(id, side, this.socket.id);
     };
 
     board.id = "#board";
@@ -277,6 +237,28 @@ export class Game {
     section.appendChild(buttonSpell);
     document.body.appendChild(section);
     document.body.appendChild(castLine);
+
+    this.players.forEach((player, index) => {
+      if (index === 0) {
+        player.position = {
+          x: 140,
+          y: Math.round(this.canvas.height / 1.3),
+        };
+
+        return;
+      }
+      player.image.src = "WizardSprite_Reversed.png";
+      player.position = {
+        x: this.canvas.width + 48,
+        y: Math.round(this.canvas.height / 1.3),
+      };
+    });
+
+    this.socket.on("castSpell", (data) => {
+      const { spellid, clientid, side } = data;
+      if (this.socket.id === clientid) return;
+      spellManager.addToQueue(spellid, side, clientid);
+    });
   }
 
   drawALobbyList() {
@@ -372,6 +354,7 @@ export class Game {
   }
 
   drawALobby() {
+    this.players.forEach((player) => player.draw());
     if (!this.connectedToSocket) {
       this.connectedToSocket = true;
 
@@ -386,15 +369,101 @@ export class Game {
         lobbyid: localStorage.getItem("lobbyid"),
       });
 
-      this.socket.on("NumberOfPlayers", (data) => {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.socket.on("connectLobby", (data) => {
+        const { players, socketids } = data;
+        this.players = players.map((player: any, index: number) => {
+          return index === 0
+            ? new Player({
+                image: "/WizardSprite.png",
+                position: { x: 0, y: 0 },
+                ctx: this.ctx,
+                frames: 3,
+                sessionid: socketids[index],
+              })
+            : new Player({
+                image: "/WizardSprite.png",
+                position: {
+                  x: 0,
+                  y: 0,
+                },
+                ctx: this.ctx,
+                frames: 3,
+                sessionid: socketids[index],
+              });
+        });
 
-        for (let i = 0; i < data.numberOfConnections; i++) {
-          this.player.position.x = this.canvas.width / 1.5 + i * 50;
-          this.player.position.y = Math.ceil(
+        this.players.forEach((player, index) => {
+          player.position.x = this.canvas.width / 1.5 + index * 50;
+          player.position.y = Math.ceil(
             import.meta.env.VITE_CANVAS_HEIGHT / 2.1
           );
-          this.player.draw();
+
+          if (
+            !document.getElementById("readyStateDiv" + data.socketids[index])
+          ) {
+            const readyStateDiv = document.createElement("div");
+            readyStateDiv.id = "readyStateDiv" + data.socketids[index];
+            const readyContainer = document.getElementById("readyContainer");
+
+            readyStateDiv.style.cssText = `
+              width: ${180}px;
+              position: absolute;
+              justify-items: center;
+              align-items: center;
+              text-align: center;`;
+            const readyStateText = document.createElement("span");
+            readyStateText.style.cssText = `
+              color: ${data.players[index].playerisReady ? "green" : "red"};
+              font-weight: bolder;
+              font-size: x-large;
+              font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;`;
+            readyStateText.id = "readyStateText" + data.socketids[index];
+            readyStateDiv.appendChild(readyStateText);
+            readyStateText.innerHTML = data.players[index].playerisReady
+              ? "READY"
+              : "NOT READY";
+            readyStateDiv.style.left = 66.1 + index * 16.3 + "rem";
+            readyStateDiv.style.top = this.canvas.height * 2.5 + "px";
+
+            readyContainer?.appendChild(readyStateDiv);
+          }
+          if (data.removeElement !== null) {
+            const dataToRemove = document.getElementById(data.removeElement);
+            dataToRemove?.remove();
+            const elementToChange = "readyStateDiv" + data.socketids[0];
+            const readyStateDiv = document.getElementById(elementToChange);
+            readyStateDiv!.style.left = 66.1 + 0 * 16.3 + "rem";
+          }
+
+          this.socket.on("readyState", (state) => {
+            const readyStateText = document.getElementById(
+              "readyStateText" + state.sockeid
+            );
+
+            if (state.state) {
+              readyStateText!.innerHTML = "READY";
+              readyStateText!.style.color = "green";
+              this.socket.emit("everyoneIsReady", {
+                lobbyid: localStorage.getItem("lobbyid"),
+              });
+              return;
+            }
+            readyStateText!.innerHTML = "NOT READY";
+            readyStateText!.style.color = "red";
+          });
+        });
+      });
+
+      /*this.socket.on("NumberOfPlayers", (data) => {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        for (let i = 0; i < data.numberOfConnections; i++) {
+          const player = this.players[i];
+          player.position.x = this.canvas.width / 1.5 + i * 50;
+          player.position.y = Math.ceil(
+            import.meta.env.VITE_CANVAS_HEIGHT / 2.1
+          );
+          console.log(player.image);
+          player.draw();
 
           if (!document.getElementById("readyStateDiv" + data.socketids[i])) {
             const readyStateDiv = document.createElement("div");
@@ -448,7 +517,7 @@ export class Game {
             readyStateText!.style.color = "red";
           });
         }
-      });
+      });*/
 
       window.onbeforeunload = () => {
         this.socket.emit("dis", {

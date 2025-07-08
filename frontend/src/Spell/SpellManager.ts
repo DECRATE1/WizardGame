@@ -11,20 +11,19 @@ export class SpellManager {
     this.SpellMap.set(id, spell);
   };
 
-  addToQueue = (id: string, side: "left" | "right") => {
+  addToQueue = (id: string, side: "left" | "right", owner: any) => {
     const spellTemple: any = this.getSpell(id);
     if (!spellTemple) {
-      this.spellCast = "";
       return;
     }
     const sessionid = new Date().getMilliseconds() + id;
     const spell = new spellTemple({
       ctx: game.ctx,
       side: side,
-      owner: sessionid,
+      sessionid,
+      owner,
     });
     this.SpellQueue.set(sessionid, spell);
-    console.log(this.SpellQueue);
   };
 
   getSpell = (id: string) => {

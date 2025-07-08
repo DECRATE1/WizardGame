@@ -1,3 +1,5 @@
+import type { Socket } from "socket.io-client";
+import { game } from "../main";
 import { Sprite } from "../Sprite/Sprite";
 
 export class Player extends Sprite {
@@ -5,21 +7,34 @@ export class Player extends Sprite {
   currentFrame: number = 0;
   hp = 100;
   prevHealth;
-
+  sessionid: Socket;
   constructor({
     image,
     position,
     frames,
     ctx,
+    sessionid,
   }: {
     image: string;
     position: { x: number; y: number };
     frames: number;
     ctx: CanvasRenderingContext2D;
+    sessionid: Socket;
   }) {
     super({ image, position, ctx });
     this.frames = frames;
     this.prevHealth = this.hp;
+    this.sessionid = sessionid;
+    game.socket.on("takeDamage", (data) => {
+      const { dmg, owner } = data;
+
+      if (this.sessionid !== owner) {
+        this.hp -= dmg;
+        console.log(this.hp);
+        return;
+      }
+      return;
+    });
   }
 
   draw(): void {
@@ -40,7 +55,7 @@ export class Player extends Sprite {
   }
 
   createHitbox(): void {
-    this.ctx.fillStyle = "rgba(255,0,0,255)";
+    this.ctx.fillStyle = "rgba(255,0,0,0)";
     this.ctx.fillRect(
       this.position.x - this.image.width,
       this.position.y - this.image.height,

@@ -6,6 +6,7 @@ export interface SpellDto {
   frames: number;
   currentFrame: number;
   side: "left" | "right";
+  sessionid: string;
 }
 
 export interface FireballDto extends SpellDto {
